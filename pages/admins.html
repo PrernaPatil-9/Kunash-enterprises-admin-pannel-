@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Management - Kunash Enterprises</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn { animation: fadeIn .5s ease-out forwards; }
+        
+        .sidebar-collapsed { width: 5rem !important; }
+        .sidebar-collapsed .sidebar-logo { width: 3rem !important; height: 3rem !important; }
+        .sidebar-collapsed .sidebar-text { display: none; }
+        
+        .role-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+        
+        .modal-content {
+            transform: scale(0.9);
+            transition: transform 0.25s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans">
+    <div class="flex h-screen">
+
+        <!-- ==================== SIDEBAR (EXACTLY SAME AS index.html) ==================== -->
+        <div id="sidebar" class="w-64 bg-gray-800 text-white transition-all duration-300 ease-in-out fixed inset-y-0 left-0 z-20 flex flex-col">
+            <!-- Logo + Toggle -->
+            <div class="p-4 flex items-center justify-between">
+                <img src="../assets/images/logoo bg.png" alt="Kunash Logo" class="w-[10rem] h-[4rem] object-contain transition-all duration-300 sidebar-logo">
+                <button id="toggle-btn" class="text-white focus:outline-none p-1 rounded hover:bg-gray-700">
+                    <span class="material-icons text-xl">chevron_left</span>
+                </button>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="mt-4 space-y-1 flex-1 px-2">
+                <a href="../index.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">dashboard</span>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                <a href="products.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">inventory_2</span>
+                    <span class="sidebar-text">Products</span>
+                </a>
+                <a href="inventory.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">warehouse</span>
+                    <span class="sidebar-text">Inventory</span>
+                </a>
+                <a href="orders.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">shopping_cart</span>
+                    <span class="sidebar-text">Orders</span>
+                </a>
+                <a href="customers.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">people</span>
+                    <span class="sidebar-text">Customers</span>
+                </a>
+                <a href="banners.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">image</span>
+                    <span class="sidebar-text">Banners</span>
+                </a>
+                <a href="messages.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">mail</span>
+                    <span class="sidebar-text">Messages</span>
+                </a>
+                <a href="admins.html" class="flex items-center py-2 px-3 bg-orange-600 font-semibold hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">admin_panel_settings</span>
+                    <span class="sidebar-text">Admin Management</span>
+                </a>
+                <a href="settings.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">settings</span>
+                    <span class="sidebar-text">Settings</span>
+                </a>
+                <a href="../login.html" id="logout-btn" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition mt-4">
+                    <span class="material-icons mr-3">logout</span>
+                    <span class="sidebar-text">Logout</span>
+                </a>
+            </nav>
+        </div>
+        <!-- =========================================================================== -->
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden main-content ml-64 transition-all duration-300">
+
+            <!-- Header -->
+            <header class="bg-white shadow-md sticky top-0 z-50">
+                <div class="flex justify-between items-center p-4 container mx-auto">
+                    <!-- Left: Sidebar Toggle + Title -->
+                    <div class="flex items-center space-x-4">
+                        <button id="sidebar-toggle" class="text-gray-600 hover:text-orange-600 focus:outline-none lg:hidden">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                        <h2 class="text-xl font-semibold text-orange-600">Kunash Enterprises Admin</h2>
+                    </div>
+
+                    <!-- Right: Admin Profile Dropdown -->
+                    <div class="relative">
+                        <button id="profile-dropdown-btn"
+                            class="flex items-center space-x-3 text-gray-700 hover:text-orange-600 focus:outline-none transition">
+                            <div class="text-right hidden sm:block">
+                                <p class="text-sm font-medium">Welcome, Admin</p>
+                                <p class="text-xs text-gray-500">admin@kunash.com</p>
+                            </div>
+                            <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+                                A
+                            </div>
+                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="profile-dropdown"
+                            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 hidden z-50 animate-fadeIn">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <p class="text-sm font-semibold text-gray-800">Admin User</p>
+                                <p class="text-xs text-gray-500">admin@kunash.com</p>
+                            </div>
+                            <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                                <span class="material-icons text-lg mr-2">person</span>
+                                My Profile
+                            </a>
+                            <a href="settings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                                <span class="material-icons text-lg mr-2">settings</span>
+                                Settings
+                            </a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="../login.html"
+                                id="logout-btn"
+                                class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">
+                                <span class="material-icons text-lg mr-2">logout</span>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Admin Management Content -->
+            <main class="flex-1 overflow-y-auto p-6 container mx-auto">
+
+                <!-- Title + Actions -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2 class="text-3xl font-bold text-orange-600 mb-4 md:mb-0 animate-fadeIn">Admin Management</h2>
+                    <button id="add-admin-btn" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center transition">
+                        <span class="material-icons mr-2 text-sm">person_add</span>
+                        Add New Admin
+                    </button>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Total Admins -->
+                    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500 animate-fadeIn">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-600">Total Admins</h3>
+                                <p id="total-admins" class="text-3xl font-bold text-orange-600 mt-2">0</p>
+                            </div>
+                            <div class="bg-orange-100 p-3 rounded-full">
+                                <span class="material-icons text-orange-500">admin_panel_settings</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between text-sm text-gray-500">
+                                <span>Active</span>
+                                <span id="active-admins">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Super Admins -->
+                    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500 animate-fadeIn">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-600">Super Admins</h3>
+                                <p id="super-admins" class="text-3xl font-bold text-blue-600 mt-2">0</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <span class="material-icons text-blue-500">security</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between text-sm text-gray-500">
+                                <span>With full access</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Today -->
+                    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500 animate-fadeIn">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-600">Active Today</h3>
+                                <p id="active-today" class="text-3xl font-bold text-green-600 mt-2">0</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <span class="material-icons text-green-500">today</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between text-sm text-gray-500">
+                                <span>Logged in today</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inactive Admins -->
+                    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500 animate-fadeIn">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-600">Inactive</h3>
+                                <p id="inactive-admins" class="text-3xl font-bold text-red-600 mt-2">0</p>
+                            </div>
+                            <div class="bg-red-100 p-3 rounded-full">
+                                <span class="material-icons text-red-500">block</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between text-sm text-gray-500">
+                                <span>Suspended/Disabled</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="bg-white p-4 rounded-lg shadow-md mb-6 animate-fadeIn">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <!-- Search -->
+                        <div class="flex-1">
+                            <div class="relative">
+                                <input type="text" id="search-admin" placeholder="Search by name or email..." 
+                                       class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                <span class="material-icons absolute left-3 top-2 text-gray-400">search</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Role Filter -->
+                        <div class="w-full md:w-48">
+                            <select id="role-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                <option value="">All Roles</option>
+                                <option value="super_admin">Super Admin</option>
+                                <option value="product_manager">Product Manager</option>
+                                <option value="order_manager">Order Manager</option>
+                                <option value="customer_manager">Customer Manager</option>
+                                <option value="banner_manager">Banner Manager</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Status Filter -->
+                        <div class="w-full md:w-48">
+                            <select id="status-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admins Table -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden animate-fadeIn">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created On</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admins-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Admins will be loaded here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="empty-state" class="hidden p-8 text-center">
+                        <span class="material-icons text-gray-400 text-6xl mb-4">admin_panel_settings</span>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No admins found</h3>
+                        <p class="text-gray-500 mb-4">Get started by adding your first admin user.</p>
+                        <button id="empty-add-btn" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">
+                            Add New Admin
+                        </button>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div id="loading-state" class="p-8 text-center">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                        <p class="mt-2 text-gray-500">Loading admins...</p>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-between items-center mt-6 bg-white p-4 rounded-lg shadow-md animate-fadeIn">
+                    <div class="text-sm text-gray-700">
+                        Showing <span id="showing-from">0</span> to <span id="showing-to">0</span> of <span id="showing-total">0</span> admins
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="prev-page" class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                            Previous
+                        </button>
+                        <div id="pagination-numbers" class="flex space-x-1">
+                            <!-- Pagination numbers will be inserted here -->
+                        </div>
+                        <button id="next-page" class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                            Next
+                        </button>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Add/Edit Admin Modal -->
+    <div id="admin-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all">
+            <div class="flex justify-between items-center p-6 border-b border-gray-200">
+                <h3 id="modal-title" class="text-lg font-semibold text-gray-900">Add New Admin</h3>
+                <button id="close-modal" class="text-gray-400 hover:text-gray-600">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <form id="admin-form" class="p-6 space-y-4">
+                <input type="hidden" id="admin-id">
+                
+                <!-- Full Name -->
+                <div>
+                    <label for="full-name" class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                    <input type="text" id="full-name" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <div id="full-name-error" class="text-red-500 text-sm mt-1 hidden"></div>
+                </div>
+                
+                <!-- Email -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                    <input type="email" id="email" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <div id="email-error" class="text-red-500 text-sm mt-1 hidden"></div>
+                </div>
+                
+                <!-- Password (only for new admins) -->
+                <div id="password-fields">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                    <input type="password" id="password" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <div id="password-error" class="text-red-500 text-sm mt-1 hidden"></div>
+                    
+                    <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1 mt-3">Confirm Password *</label>
+                    <input type="password" id="confirm-password" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <div id="confirm-password-error" class="text-red-500 text-sm mt-1 hidden"></div>
+                </div>
+                
+                <!-- Role -->
+                <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Role *</label>
+                    <select id="role" required 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        <option value="">Select Role</option>
+                        <option value="super_admin">Super Admin</option>
+                        <option value="product_manager">Product Manager</option>
+                        <option value="order_manager">Order Manager</option>
+                        <option value="customer_manager">Customer Manager</option>
+                        <option value="banner_manager">Banner Manager</option>
+                    </select>
+                    <div id="role-error" class="text-red-500 text-sm mt-1 hidden"></div>
+                </div>
+                
+                <!-- Status -->
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="status" class="rounded border-gray-300 text-orange-500 focus:ring-orange-500">
+                        <span class="ml-2 text-sm text-gray-700">Active Account</span>
+                    </label>
+                </div>
+            </form>
+            
+            <div class="flex justify-end space-x-3 p-6 border-t border-gray-200">
+                <button id="cancel-modal" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition">Cancel</button>
+                <button id="save-admin" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition">
+                    Save Admin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all">
+            <div class="p-6">
+                <h3 id="confirm-title" class="text-lg font-semibold text-gray-900 mb-2">Confirm Action</h3>
+                <p id="confirm-message" class="text-gray-600 mb-6">Are you sure you want to perform this action?</p>
+                <div class="flex justify-end space-x-3">
+                    <button id="cancel-confirm" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition">Cancel</button>
+                    <button id="confirm-action" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PROFILE SYNC + SIDEBAR JS (SAME AS index.html) ==================== -->
+    <script>
+        // === PROFILE SYNC FUNCTION ===
+        function updateHeaderProfile() {
+            const profile = JSON.parse(localStorage.getItem('adminProfile')) || {
+                name: "Admin User", email: "admin@kunash.com", role: "System Administrator", photo: ""
+            };
+
+            const avatarContainer = document.querySelector('#profile-dropdown-btn + .relative .w-10.h-10') ||
+                                    document.querySelector('header .w-10.h-10.bg-orange-500');
+
+            const welcomeNameEl = document.querySelector('header .text-right p.font-medium');
+            const welcomeEmailEl = document.querySelector('header .text-right p.text-xs');
+            const dropdownName = document.querySelector('#profile-dropdown p.font-semibold');
+            const dropdownEmail = document.querySelector('#profile-dropdown p.text-xs');
+
+            if (!avatarContainer) return;
+
+            let img = avatarContainer.querySelector('img');
+            let letter = avatarContainer.querySelector('span');
+
+            if (profile.photo) {
+                if (!img) {
+                    img = document.createElement('img');
+                    img.className = 'w-full h-full rounded-full object-cover';
+                    img.alt = 'Profile';
+                    avatarContainer.innerHTML = '';
+                    avatarContainer.appendChild(img);
+                }
+                img.src = profile.photo;
+            } else {
+                if (!letter) {
+                    letter = document.createElement('span');
+                    letter.className = 'text-white font-bold text-lg';
+                    avatarContainer.innerHTML = '';
+                    avatarContainer.appendChild(letter);
+                }
+                letter.textContent = profile.name.charAt(0).toUpperCase();
+            }
+
+            if (welcomeNameEl) welcomeNameEl.textContent = profile.name;
+            if (welcomeEmailEl) welcomeEmailEl.textContent = profile.email;
+            if (dropdownName) dropdownName.textContent = profile.name;
+            if (dropdownEmail) dropdownEmail.textContent = profile.email;
+        }
+
+        // === INITIAL LOAD ===
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeaderProfile();
+
+            const dropdownBtn = document.getElementById('profile-dropdown-btn');
+            const dropdown = document.getElementById('profile-dropdown');
+            if (dropdownBtn && dropdown) {
+                dropdownBtn.onclick = () => dropdown.classList.toggle('hidden');
+            }
+        });
+
+        // === LISTEN FOR UPDATES ===
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'adminProfile') updateHeaderProfile();
+        });
+        window.addEventListener('profileUpdated', updateHeaderProfile);
+
+        // === SIDEBAR LOGIC (SAME AS index.html) ===
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const toggleIcon = toggleBtn.querySelector('.material-icons');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        let isCollapsed = false;
+
+        toggleBtn.addEventListener('click', () => {
+            isCollapsed = !isCollapsed;
+            if (isCollapsed) {
+                sidebar.classList.add('sidebar-collapsed');
+                mainContent.classList.remove('ml-64');
+                mainContent.classList.add('ml-20');
+                toggleIcon.textContent = 'chevron_right';
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+                mainContent.classList.remove('ml-20');
+                mainContent.classList.add('ml-64');
+                toggleIcon.textContent = 'chevron_left';
+            }
+        });
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 1024) {
+                const isClickInside = sidebar.contains(e.target) || (sidebarToggle && sidebarToggle.contains(e.target));
+                if (!isClickInside && !sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('-translate-x-full');
+                if (!isCollapsed) mainContent.classList.add('ml-64');
+            } else {
+                mainContent.classList.remove('ml-64', 'ml-20');
+            }
+        });
+
+        // Close dropdown outside click
+        document.addEventListener('click', function (e) {
+            const dropdown = document.getElementById('profile-dropdown');
+            const btn = document.getElementById('profile-dropdown-btn');
+            if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Logout
+        document.getElementById('logout-btn')?.addEventListener('click', function () {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('adminAuth');
+                sessionStorage.clear();
+                window.location.href = '../login.html';
+            }
+        });
+
+        // Highlight active page
+        document.querySelectorAll('#sidebar a').forEach(link => {
+            if (link.href === window.location.href) {
+                link.classList.remove('hover:bg-orange-500');
+                link.classList.add('bg-orange-600', 'font-semibold');
+            }
+        });
+    </script>
+    <!-- =========================================================================== -->
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/admins.js"></script>
+
+</body>
+
+</html>

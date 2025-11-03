@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banners - Kunash Enterprises Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        .banner-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .banner-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .active-banner {
+            border-left: 4px solid #10B981;
+        }
+        .inactive-banner {
+            border-left: 4px solid #EF4444;
+        }
+        .image-preview {
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        .file-input-label {
+            cursor: pointer;
+            background: #f3f4f6;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: #374151;
+            border: 1px dashed #d1d5db;
+        }
+        .file-input-label:hover {
+            background: #e5e7eb;
+        }
+        .tab-btn.active {
+            background: #ea580c;
+            color: white;
+        }
+        /* View Modal Image Fix */
+        #view-banner-image {
+            max-width: 600px;
+            max-height: 400px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            margin: 0 auto;
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .sidebar-collapsed { width: 5rem !important; }
+        .sidebar-collapsed .sidebar-logo { width: 3rem !important; height: 3rem !important; }
+        .sidebar-collapsed .sidebar-text { display: none; }
+        .main-content { transition: margin-left 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="flex h-screen">
+
+        <!-- ==================== SIDEBAR (EXACTLY SAME AS index.html) ==================== -->
+        <div id="sidebar"
+            class="w-64 bg-gray-800 text-white transition-all duration-300 ease-in-out fixed inset-y-0 left-0 z-20 flex flex-col">
+            <!-- Logo + Toggle -->
+            <div class="p-4 flex items-center justify-between">
+                <img src="../assets/images/logoo bg.png" alt="Kunash Logo"
+                    class="w-[10rem] h-[4rem] object-contain transition-all duration-300 sidebar-logo">
+                <button id="toggle-btn" class="text-white focus:outline-none p-1 rounded hover:bg-gray-700">
+                    <span class="material-icons text-xl">chevron_left</span>
+                </button>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="mt-4 space-y-1 flex-1 px-2">
+                <a href="../index.html"
+                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">dashboard</span>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                <a href="products.html"
+                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">inventory_2</span>
+                    <span class="sidebar-text">Products</span>
+                </a>
+                <a href="inventory.html"
+                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">warehouse</span>
+                    <span class="sidebar-text">Inventory</span>
+                </a>
+                <a href="orders.html"
+                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">shopping_cart</span>
+                    <span class="sidebar-text">Orders</span>
+                </a>
+                <a href="customers.html"
+                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">people</span>
+                    <span class="sidebar-text">Customers</span>
+                </a>
+                <a href="banners.html"
+                    class="flex items-center py-2 px-3 bg-orange-600 font-semibold hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">image</span>
+                    <span class="sidebar-text">Banners</span>
+                </a>
+                <a href="messages.html"
+                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">mail</span>
+                    <span class="sidebar-text">Messages</span>
+                </a>
+                <a href="admins.html"
+                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">admin_panel_settings</span>
+                    <span class="sidebar-text">Admin Management</span>
+                </a>
+                <a href="settings.html"
+                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">settings</span>
+                    <span class="sidebar-text">Settings</span>
+                </a>
+                <a href="../login.html" id="logout-btn"
+                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition mt-4">
+                    <span class="material-icons mr-3">logout</span>
+                    <span class="sidebar-text">Logout</span>
+                </a>
+            </nav>
+        </div>
+        <!-- =========================================================================== -->
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden main-content ml-64 transition-all duration-300">
+            <!-- Header -->
+            <header class="bg-white shadow-md sticky top-0 z-50">
+                <div class="flex justify-between items-center p-4 container mx-auto">
+                    <!-- Left: Sidebar Toggle + Title -->
+                    <div class="flex items-center space-x-4">
+                        <button id="sidebar-toggle" class="text-gray-600 hover:text-orange-600 focus:outline-none lg:hidden">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                            </svg>
+                        </button>
+                        <h2 class="text-xl font-semibold text-orange-600">Manage Banners</h2>
+                    </div>
+
+                    <!-- Right: Admin Profile Dropdown -->
+                    <div class="relative">
+                        <button id="profile-dropdown-btn"
+                            class="flex items-center space-x-3 text-gray-700 hover:text-orange-600 focus:outline-none transition">
+                            <div class="text-right hidden sm:block">
+                                <p class="text-sm font-medium">Welcome, Admin</p>
+                                <p class="text-xs text-gray-500">admin@kunash.com</p>
+                            </div>
+                            <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+                                A
+                            </div>
+                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="profile-dropdown"
+                            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 hidden z-50 animate-fadeIn">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <p class="text-sm font-semibold text-gray-800">Admin User</p>
+                                <p class="text-xs text-gray-500">admin@kunash.com</p>
+                            </div>
+                            <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                                <span class="material-icons text-lg mr-2">person</span>
+                                My Profile
+                            </a>
+                            <a href="settings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                                <span class="material-icons text-lg mr-2">settings</span>
+                                Settings
+                            </a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="../login.html"
+                                id="logout-btn"
+                                class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">
+                                <span class="material-icons text-lg mr-2">logout</span>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Banners Content -->
+            <main class="flex-1 overflow-y-auto p-6 container mx-auto">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white p-4 rounded-lg shadow-md flex items-center">
+                        <div class="bg-orange-100 p-3 rounded-full mr-4">
+                            <i class="fas fa-image text-orange-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Total Banners</p>
+                            <h3 class="text-2xl font-bold" id="total-banners">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md flex items-center">
+                        <div class="bg-green-100 p-3 rounded-full mr-4">
+                            <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Active Banners</p>
+                            <h3 class="text-2xl font-bold" id="active-banners">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md flex items-center">
+                        <div class="bg-red-100 p-3 rounded-full mr-4">
+                            <i class="fas fa-pause-circle text-red-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Inactive Banners</p>
+                            <h3 class="text-2xl font-bold" id="inactive-banners">0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-orange-600">Banners</h2>
+                    <div class="flex space-x-2">
+                        <button id="toggle-view-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition">
+                            Card View
+                        </button>
+                        <button id="add-banner-btn" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition">
+                            Add Banner
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table View -->
+                <div id="table-view" class="bg-white shadow rounded-lg overflow-hidden fade-in">
+                    <table id="banners-table" class="w-full">
+                        <thead class="bg-orange-100">
+                            <tr>
+                                <th class="py-3 px-4 text-left">ID</th>
+                                <th class="py-3 px-4 text-left">Title</th>
+                                <th class="py-3 px-4 text-left">Image</th>
+                                <th class="py-3 px-4 text-left">Status</th>
+                                <th class="py-3 px-4 text-left">Created</th>
+                                <th class="py-3 px-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <!-- Card View -->
+                <div id="card-view" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+                <!-- Add Banner Modal -->
+                <div id="add-banner-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-30">
+                    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
+                        <h3 class="text-xl font-semibold text-orange-600 mb-4">Add New Banner</h3>
+                        <form id="add-banner-form">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="mb-4">
+                                    <label for="banner-title" class="block text-gray-700 mb-2">Title</label>
+                                    <input type="text" id="banner-title" class="w-full border p-2 rounded" placeholder="Enter banner title" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="banner-link" class="block text-gray-700 mb-2">Link URL (Optional)</label>
+                                    <input type="url" id="banner-link" class="w-full border p-2 rounded" placeholder="https://example.com">
+                                </div>
+                            </div>
+
+                            <!-- Image Source Tabs -->
+                            <div class="mb-4">
+                                <div class="flex space-x-1 mb-3">
+                                    <button type="button" id="tab-url" class="tab-btn active px-4 py-2 text-sm font-medium rounded-t-lg bg-orange-600 text-white">URL</button>
+                                    <button type="button" id="tab-upload" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg bg-gray-200 text-gray-700">Upload from Desktop</button>
+                                </div>
+                                <div id="url-input" class="tab-content">
+                                    <input type="url" id="banner-image-url" class="w-full border p-2 rounded" placeholder="https://example.com/image.jpg">
+                                </div>
+                                <div id="upload-input" class="tab-content hidden">
+                                    <div class="file-input-wrapper">
+                                        <input type="file" id="banner-image-file" accept="image/*">
+                                        <label for="banner-image-file" class="file-input-label">
+                                            Browse Files
+                                        </label>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">Max size: 5MB. Formats: JPG, PNG, GIF</p>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-gray-700 mb-2">Image Preview</label>
+                                <div id="image-preview" class="image-preview bg-gray-200 rounded-lg flex items-center justify-center">
+                                    <span class="text-gray-500">Preview will appear here</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-4 flex items-center">
+                                <input type="checkbox" id="banner-active" class="h-5 w-5 text-orange-600 mr-2" checked>
+                                <label for="banner-active" class="text-gray-700">Active Banner</label>
+                            </div>
+
+                            <div class="flex justify-end space-x-2">
+                                <button type="button" id="cancel-banner-btn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition">Cancel</button>
+                                <button type="submit" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition">Add Banner</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Edit Banner Modal -->
+                <div id="edit-banner-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-30">
+                    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
+                        <h3 class="text-xl font-semibold text-orange-600 mb-4">Edit Banner</h3>
+                        <form id="edit-banner-form">
+                            <input type="hidden" id="edit-banner-id">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="mb-4">
+                                    <label for="edit-banner-title" class="block text-gray-700 mb-2">Title</label>
+                                    <input type="text" id="edit-banner-title" class="w-full border p-2 rounded" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="edit-banner-link" class="block text-gray-700 mb-2">Link URL (Optional)</label>
+                                    <input type="url" id="edit-banner-link" class="w-full border p-2 rounded">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="flex space-x-1 mb-3">
+                                    <button type="button" id="edit-tab-url" class="tab-btn active px-4 py-2 text-sm font-medium rounded-t-lg bg-orange-600 text-white">URL</button>
+                                    <button type="button" id="edit-tab-upload" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg bg-gray-200 text-gray-700">Upload</button>
+                                </div>
+                                <div id="edit-url-input" class="tab-content">
+                                    <input type="url" id="edit-banner-image-url" class="w-full border p-2 rounded" required>
+                                </div>
+                                <div id="edit-upload-input" class="tab-content hidden">
+                                    <div class="file-input-wrapper">
+                                        <input type="file" id="edit-banner-image-file" accept="image/*">
+                                        <label for="edit-banner-image-file" class="file-input-label">
+                                            Browse Files
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-gray-700 mb-2">Image Preview</label>
+                                <div id="edit-image-preview" class="image-preview bg-gray-200 rounded-lg flex items-center justify-center">
+                                    <span class="text-gray-500">Preview will appear here</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-4 flex items-center">
+                                <input type="checkbox" id="edit-banner-active" class="h-5 w-5 text-orange-600 mr-2">
+                                <label for="edit-banner-active" class="text-gray-700">Active Banner</label>
+                            </div>
+
+                            <div class="flex justify-end space-x-2">
+                                <button type="button" id="cancel-edit-banner-btn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition">Cancel</button>
+                                <button type="submit" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- View Banner Modal (FIXED SIZE) -->
+                <div id="view-banner-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden flex items-center justify-center z-50 p-4">
+                    <div class="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-screen overflow-y-auto">
+                        <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+                            <h3 id="view-banner-title" class="text-2xl font-bold text-orange-600"></h3>
+                            <button id="close-view-modal" class="text-gray-500 hover:text-gray-700 text-3xl font-light">×</button>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-center mb-6">
+                                <img id="view-banner-image" src="" alt="Banner Preview" class="rounded-lg">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p class="text-gray-600 font-medium">Status:</p>
+                                    <p id="view-banner-status" class="text-lg font-semibold"></p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600 font-medium">Created On:</p>
+                                    <p id="view-banner-created" class="text-lg font-semibold"></p>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <p class="text-gray-600 font-medium">Link:</p>
+                                    <a id="view-banner-link" href="#" target="_blank" class="text-orange-600 hover:underline font-medium break-all"></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ==================== PROFILE SYNC + SIDEBAR JS (SAME AS index.html) ==================== -->
+    <script>
+        // === PROFILE SYNC FUNCTION ===
+        function updateHeaderProfile() {
+            const profile = JSON.parse(localStorage.getItem('adminProfile')) || {
+                name: "Admin User", email: "admin@kunash.com", role: "System Administrator", photo: ""
+            };
+
+            const avatarContainer = document.querySelector('#profile-dropdown-btn + .relative .w-10.h-10') ||
+                                    document.querySelector('header .w-10.h-10.bg-orange-500');
+
+            const welcomeNameEl = document.querySelector('header .text-right p.font-medium');
+            const welcomeEmailEl = document.querySelector('header .text-right p.text-xs');
+            const dropdownName = document.querySelector('#profile-dropdown p.font-semibold');
+            const dropdownEmail = document.querySelector('#profile-dropdown p.text-xs');
+
+            if (!avatarContainer) return;
+
+            let img = avatarContainer.querySelector('img');
+            let letter = avatarContainer.querySelector('span');
+
+            if (profile.photo) {
+                if (!img) {
+                    img = document.createElement('img');
+                    img.className = 'w-full h-full rounded-full object-cover';
+                    img.alt = 'Profile';
+                    avatarContainer.innerHTML = '';
+                    avatarContainer.appendChild(img);
+                }
+                img.src = profile.photo;
+            } else {
+                if (!letter) {
+                    letter = document.createElement('span');
+                    letter.className = 'text-white font-bold text-lg';
+                    avatarContainer.innerHTML = '';
+                    avatarContainer.appendChild(letter);
+                }
+                letter.textContent = profile.name.charAt(0).toUpperCase();
+            }
+
+            if (welcomeNameEl) welcomeNameEl.textContent = profile.name;
+            if (welcomeEmailEl) welcomeEmailEl.textContent = profile.email;
+            if (dropdownName) dropdownName.textContent = profile.name;
+            if (dropdownEmail) dropdownEmail.textContent = profile.email;
+        }
+
+        // === INITIAL LOAD ===
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeaderProfile();
+
+            const dropdownBtn = document.getElementById('profile-dropdown-btn');
+            const dropdown = document.getElementById('profile-dropdown');
+            if (dropdownBtn && dropdown) {
+                dropdownBtn.onclick = () => dropdown.classList.toggle('hidden');
+            }
+        });
+
+        // === LISTEN FOR UPDATES ===
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'adminProfile') updateHeaderProfile();
+        });
+        window.addEventListener('profileUpdated', updateHeaderProfile);
+
+        // === SIDEBAR LOGIC (SAME AS index.html) ===
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const toggleIcon = toggleBtn.querySelector('.material-icons');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        let isCollapsed = false;
+
+        toggleBtn.addEventListener('click', () => {
+            isCollapsed = !isCollapsed;
+            if (isCollapsed) {
+                sidebar.classList.add('sidebar-collapsed');
+                mainContent.classList.remove('ml-64');
+                mainContent.classList.add('ml-20');
+                toggleIcon.textContent = 'chevron_right';
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+                mainContent.classList.remove('ml-20');
+                mainContent.classList.add('ml-64');
+                toggleIcon.textContent = 'chevron_left';
+            }
+        });
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 1024) {
+                const isClickInside = sidebar.contains(e.target) || (sidebarToggle && sidebarToggle.contains(e.target));
+                if (!isClickInside && !sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('-translate-x-full');
+                if (!isCollapsed) mainContent.classList.add('ml-64');
+            } else {
+                mainContent.classList.remove('ml-64', 'ml-20');
+            }
+        });
+
+        // Close dropdown outside click
+        document.addEventListener('click', function (e) {
+            const dropdown = document.getElementById('profile-dropdown');
+            const btn = document.getElementById('profile-dropdown-btn');
+            if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Logout
+        document.getElementById('logout-btn')?.addEventListener('click', function () {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('adminAuth');
+                sessionStorage.clear();
+                window.location.href = '../login.html';
+            }
+        });
+
+        // Highlight active page
+        document.querySelectorAll('#sidebar a').forEach(link => {
+            if (link.href === window.location.href) {
+                link.classList.remove('hover:bg-orange-500');
+                link.classList.add('bg-orange-600', 'font-semibold');
+            }
+        });
+    </script>
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/banners.js"></script>
+</body>
+</html>

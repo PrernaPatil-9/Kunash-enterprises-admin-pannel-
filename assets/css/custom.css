@@ -1,0 +1,462 @@
+/* Kunash Enterprises Admin Panel - Custom Styles */
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Smooth transitions for sidebar */
+#sidebar {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Line clamp utility for text truncation */
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-in-out;
+}
+
+/* Custom button styles */
+.btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200;
+}
+
+.btn-secondary {
+    @apply bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200;
+}
+
+.btn-danger {
+    @apply bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200;
+}
+
+.btn-success {
+    @apply bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200;
+}
+
+/* Card hover effects */
+.card-hover {
+    @apply transition-all duration-200 ease-in-out;
+}
+
+.card-hover:hover {
+    @apply transform -translate-y-1 shadow-lg;
+}
+
+/* Table row hover effects */
+.table-row-hover {
+    @apply transition-colors duration-150;
+}
+
+.table-row-hover:hover {
+    @apply bg-gray-50;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Status badges */
+.status-badge {
+    @apply px-2 py-1 text-xs font-medium rounded-full;
+}
+
+.status-pending {
+    @apply bg-yellow-100 text-yellow-800;
+}
+
+.status-confirmed {
+    @apply bg-blue-100 text-blue-800;
+}
+
+.status-shipped {
+    @apply bg-purple-100 text-purple-800;
+}
+
+.status-delivered {
+    @apply bg-green-100 text-green-800;
+}
+
+.status-cancelled {
+    @apply bg-red-100 text-red-800;
+}
+
+/* Form input focus styles */
+.form-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200;
+}
+
+.form-select {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200;
+}
+
+.form-textarea {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 resize-vertical;
+}
+
+/* Modal backdrop blur effect */
+.modal-backdrop {
+    backdrop-filter: blur(4px);
+}
+
+/* Sidebar active link indicator */
+.sidebar-link {
+    @apply block py-2 px-4 transition-colors duration-200 relative;
+}
+
+.sidebar-link.active {
+    @apply bg-blue-700;
+}
+
+.sidebar-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #ffffff;
+}
+
+/* Stats card hover effects */
+.stats-card {
+    @apply bg-white p-6 rounded-lg shadow transition-all duration-200;
+}
+
+.stats-card:hover {
+    @apply transform -translate-y-1 shadow-lg;
+}
+
+.stats-card .icon {
+    @apply w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl mb-4;
+}
+
+/* Gradient backgrounds */
+.gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-success {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.gradient-warning {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.gradient-danger {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+/* Custom shadows */
+.shadow-soft {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-medium {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-hard {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Notification styles */
+.notification {
+    @apply fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out;
+}
+
+.notification-enter {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.notification-enter-active {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification-exit {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification-exit-active {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+/* Empty state styles */
+.empty-state {
+    @apply text-center py-12;
+}
+
+.empty-state-icon {
+    @apply w-16 h-16 mx-auto mb-4 text-gray-400;
+}
+
+.empty-state-title {
+    @apply text-lg font-medium text-gray-900 mb-2;
+}
+
+.empty-state-description {
+    @apply text-gray-500 mb-6 max-w-md mx-auto;
+}
+
+/* Loading skeleton */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.skeleton-text {
+    @apply h-4 bg-gray-200 rounded;
+}
+
+.skeleton-image {
+    @apply bg-gray-200 rounded;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .print-break {
+        page-break-after: always;
+    }
+}
+
+/* Dark mode support (if needed later) */
+@media (prefers-color-scheme: dark) {
+    .dark-mode-auto {
+        /* Dark mode styles can be added here */
+    }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .mobile-hidden {
+        display: none !important;
+    }
+    
+    .mobile-full {
+        width: 100% !important;
+    }
+    
+    .mobile-stack {
+        flex-direction: column !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .high-contrast {
+        border: 1px solid currentColor;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Custom utility classes */
+.text-shadow {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.backdrop-blur {
+    backdrop-filter: blur(8px);
+}
+
+.border-gradient {
+    border: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, #667eea, #764ba2) border-box;
+}
+
+/* Focus visible for accessibility */
+.focus-visible:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Custom select styles */
+.custom-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+/* Custom checkbox styles */
+.custom-checkbox {
+    appearance: none;
+    background-color: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    position: relative;
+}
+
+.custom-checkbox:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.custom-checkbox:checked::before {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 0.75rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Custom radio styles */
+.custom-radio {
+    appearance: none;
+    background-color: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 50%;
+    width: 1rem;
+    height: 1rem;
+    position: relative;
+}
+
+.custom-radio:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.custom-radio:checked::before {
+    content: '';
+    position: absolute;
+    width: 0.375rem;
+    height: 0.375rem;
+    background-color: white;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Orange Theme Consistency */
+.btn-orange {
+    @apply bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition;
+}
+
+.text-orange {
+    color: #ea580c !important;
+}
+
+.border-orange {
+    border-color: #ea580c !important;
+}
+
+.focus\:ring-orange-500:focus {
+    --tw-ring-color: #ea580c;
+}
+
+/* Modal Scrollbar */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #ea580c;
+    border-radius: 3px;
+}
