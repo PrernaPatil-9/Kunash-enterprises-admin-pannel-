@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Kunash Enterprises Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out forwards; }
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 4px;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md animate-fadeIn">
+        <div class="text-center mb-8">
+            <!-- LOGO -->
+            <div class="flex justify-center">
+                <img 
+                    src="assets/images/logoo.png" 
+                    alt="Kunash Logo" 
+                    class="w-full max-w-xs h-auto object-contain"
+                >
+            </div>
+            <h1 class="text-2xl font-bold text-orange-600 mt-4">Create Account</h1>
+            <p class="text-gray-600">Join Kunash Enterprises Admin Panel</p>
+        </div>
+        
+        <form id="signup-form">
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="firstName" class="block text-gray-700 mb-2">First Name <span class="text-red-500">*</span></label>
+                    <input 
+                        type="text" 
+                        id="firstName" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        required
+                        placeholder="First name"
+                    >
+                </div>
+                <div>
+                    <label for="lastName" class="block text-gray-700 mb-2">Last Name <span class="text-red-500">*</span></label>
+                    <input 
+                        type="text" 
+                        id="lastName" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        required
+                        placeholder="Last name"
+                    >
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700 mb-2">Email Address <span class="text-red-500">*</span></label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                    placeholder="your@email.com"
+                >
+                <div id="email-error" class="text-red-500 text-sm mt-1 hidden"></div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="username" class="block text-gray-700 mb-2">Username <span class="text-red-500">*</span></label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                    placeholder="Choose a username"
+                >
+                <div id="username-error" class="text-red-500 text-sm mt-1 hidden"></div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="password" class="block text-gray-700 mb-2">Password <span class="text-red-500">*</span></label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                    placeholder="Create a strong password"
+                >
+                <div class="password-strength bg-gray-200" id="password-strength"></div>
+                <div id="password-error" class="text-red-500 text-sm mt-1 hidden"></div>
+            </div>
+            
+            <div class="mb-6">
+                <label for="confirmPassword" class="block text-gray-700 mb-2">Confirm Password <span class="text-red-500">*</span></label>
+                <input 
+                    type="password" 
+                    id="confirmPassword" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                    placeholder="Confirm your password"
+                >
+                <div id="confirm-password-error" class="text-red-500 text-sm mt-1 hidden"></div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="flex items-center">
+                    <input type="checkbox" id="terms" class="rounded border-gray-300 text-orange-600 focus:ring-orange-500">
+                    <span class="ml-2 text-gray-700 text-sm">
+                        I agree to the <a href="#" class="text-orange-600 hover:text-orange-700">Terms of Service</a> and <a href="#" class="text-orange-600 hover:text-orange-700">Privacy Policy</a>
+                    </span>
+                </label>
+                <div id="terms-error" class="text-red-500 text-sm mt-1 hidden">You must agree to the terms and conditions</div>
+            </div>
+            
+            <button 
+                type="submit" 
+                class="w-full bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 transition duration-200 font-medium"
+            >
+                Create Account
+            </button>
+        </form>
+        
+        <div class="mt-4 text-center">
+            <p class="text-gray-600 text-sm">
+                Already have an account? 
+                <a href="login.html" class="text-orange-600 hover:text-orange-700 font-medium transition duration-200">Login here</a>
+            </p>
+        </div>
+        
+        <div id="success-message" class="mt-4 text-green-600 text-center hidden bg-green-50 p-3 rounded-md">
+            Account created successfully! Redirecting to login...
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification" class="fixed bottom-4 right-4 hidden p-4 rounded-lg shadow-lg text-white"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const signupForm = document.getElementById('signup-form');
+            const notification = document.getElementById('notification');
+            const successMessage = document.getElementById('success-message');
+            
+            // Password strength indicator
+            const passwordInput = document.getElementById('password');
+            const passwordStrength = document.getElementById('password-strength');
+            
+            // Show notification function
+            function showNotification(message, type = 'success') {
+                notification.textContent = message;
+                notification.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+                notification.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                }, 3000);
+            }
+            
+            // Check if user is already logged in
+            if (localStorage.getItem('adminAuth') === 'true') {
+                window.location.href = 'index.html';
+            }
+            
+            // Password strength checker
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                let strength = 0;
+                
+                // Length check
+                if (password.length >= 8) strength += 25;
+                
+                // Lowercase check
+                if (/[a-z]/.test(password)) strength += 25;
+                
+                // Uppercase check
+                if (/[A-Z]/.test(password)) strength += 25;
+                
+                // Number/Special character check
+                if (/[0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) strength += 25;
+                
+                // Update strength indicator
+                if (strength <= 25) {
+                    passwordStrength.style.backgroundColor = '#ef4444'; // red
+                    passwordStrength.style.width = '25%';
+                } else if (strength <= 50) {
+                    passwordStrength.style.backgroundColor = '#f59e0b'; // amber
+                    passwordStrength.style.width = '50%';
+                } else if (strength <= 75) {
+                    passwordStrength.style.backgroundColor = '#eab308'; // yellow
+                    passwordStrength.style.width = '75%';
+                } else {
+                    passwordStrength.style.backgroundColor = '#22c55e'; // green
+                    passwordStrength.style.width = '100%';
+                }
+            });
+            
+            // Real-time validation
+            document.getElementById('email').addEventListener('blur', function() {
+                const email = this.value.trim();
+                const emailError = document.getElementById('email-error');
+                
+                if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    emailError.textContent = 'Please enter a valid email address';
+                    emailError.classList.remove('hidden');
+                } else {
+                    emailError.classList.add('hidden');
+                }
+            });
+            
+            document.getElementById('confirmPassword').addEventListener('input', function() {
+                const password = document.getElementById('password').value;
+                const confirmPassword = this.value;
+                const confirmError = document.getElementById('confirm-password-error');
+                
+                if (confirmPassword && password !== confirmPassword) {
+                    confirmError.textContent = 'Passwords do not match';
+                    confirmError.classList.remove('hidden');
+                } else {
+                    confirmError.classList.add('hidden');
+                }
+            });
+            
+            // Form submission
+            signupForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form values
+                const firstName = document.getElementById('firstName').value.trim();
+                const lastName = document.getElementById('lastName').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const terms = document.getElementById('terms').checked;
+                
+                // Validation flags
+                let isValid = true;
+                
+                // Check required fields
+                if (!firstName) {
+                    showNotification('First name is required', 'error');
+                    isValid = false;
+                }
+                
+                if (!lastName) {
+                    showNotification('Last name is required', 'error');
+                    isValid = false;
+                }
+                
+                if (!email) {
+                    showNotification('Email is required', 'error');
+                    isValid = false;
+                }
+                
+                if (!username) {
+                    showNotification('Username is required', 'error');
+                    isValid = false;
+                }
+                
+                if (!password) {
+                    showNotification('Password is required', 'error');
+                    isValid = false;
+                }
+                
+                if (!confirmPassword) {
+                    showNotification('Please confirm your password', 'error');
+                    isValid = false;
+                }
+                
+                // Email validation
+                if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    document.getElementById('email-error').textContent = 'Please enter a valid email address';
+                    document.getElementById('email-error').classList.remove('hidden');
+                    isValid = false;
+                }
+                
+                // Password validation
+                if (password && password.length < 8) {
+                    document.getElementById('password-error').textContent = 'Password must be at least 8 characters long';
+                    document.getElementById('password-error').classList.remove('hidden');
+                    isValid = false;
+                }
+                
+                // Password match validation
+                if (password !== confirmPassword) {
+                    document.getElementById('confirm-password-error').textContent = 'Passwords do not match';
+                    document.getElementById('confirm-password-error').classList.remove('hidden');
+                    isValid = false;
+                }
+                
+                // Terms validation
+                if (!terms) {
+                    document.getElementById('terms-error').classList.remove('hidden');
+                    isValid = false;
+                } else {
+                    document.getElementById('terms-error').classList.add('hidden');
+                }
+                
+                if (isValid) {
+                    // Check if username or email already exists
+                    const existingAdmin = JSON.parse(localStorage.getItem('adminProfile'));
+                    
+                    if (existingAdmin && (existingAdmin.username === username || existingAdmin.email === email)) {
+                        showNotification('Username or email already exists', 'error');
+                        return;
+                    }
+                    
+                    // Create admin profile
+                    const adminProfile = {
+                        name: `${firstName} ${lastName}`,
+                        email: email,
+                        username: username,
+                        password: password,
+                        role: "System Administrator",
+                        photo: "",
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    // Save to localStorage
+                    localStorage.setItem('adminProfile', JSON.stringify(adminProfile));
+                    
+                    // Show success message
+                    successMessage.classList.remove('hidden');
+                    showNotification('Account created successfully!', 'success');
+                    
+                    // Redirect to login page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                }
+            });
+            
+            // Clear errors when user starts typing
+            const inputs = signupForm.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const errorId = this.id + '-error';
+                    const errorElement = document.getElementById(errorId);
+                    if (errorElement) {
+                        errorElement.classList.add('hidden');
+                    }
+                    
+                    // Special case for confirm password
+                    if (this.id === 'password') {
+                        document.getElementById('confirm-password-error').classList.add('hidden');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

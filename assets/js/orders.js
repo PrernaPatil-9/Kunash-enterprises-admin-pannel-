@@ -1,4 +1,6 @@
-// Order Management System
+/* ==============================================================
+   Order Management – everything in one class
+   ============================================================== */
 class OrderManager {
     constructor() {
         this.orders = [];
@@ -6,10 +8,11 @@ class OrderManager {
         this.currentPage = 1;
         this.itemsPerPage = 10;
         this.selectedOrders = new Set();
-        
+
         this.init();
     }
 
+    /* ---------------------------------------------------------- */
     init() {
         this.loadOrders();
         this.setupEventListeners();
@@ -17,21 +20,19 @@ class OrderManager {
         this.updateStats();
     }
 
+    /* ---------------------------------------------------------- */
     loadOrders() {
-        // Try to load from localStorage, otherwise use sample data
-        const savedOrders = localStorage.getItem('orders');
-        
-        if (savedOrders) {
-            this.orders = JSON.parse(savedOrders);
+        const saved = localStorage.getItem('orders');
+        if (saved) {
+            this.orders = JSON.parse(saved);
         } else {
-            // Generate sample orders if none exist
             this.generateSampleOrders();
             this.saveOrders();
         }
-        
         this.filteredOrders = [...this.orders];
     }
 
+    /* ---------------------------------------------------------- */
     generateSampleOrders() {
         const customers = [
             { name: "Rajesh Kumar", email: "rajesh@example.com", phone: "9876543210", address: "123 MG Road", city: "Bangalore", state: "Karnataka", pincode: "560001" },
@@ -40,7 +41,6 @@ class OrderManager {
             { name: "Sneha Reddy", email: "sneha@example.com", phone: "9876543213", address: "321 Koramangala", city: "Bangalore", state: "Karnataka", pincode: "560034" },
             { name: "Vikram Singh", email: "vikram@example.com", phone: "9876543214", address: "654 Whitefield", city: "Bangalore", state: "Karnataka", pincode: "560066" }
         ];
-
         const products = [
             { name: "Premium Cashew Nuts 500g", price: 850 },
             { name: "Almonds 500g", price: 650 },
@@ -48,58 +48,49 @@ class OrderManager {
             { name: "Walnuts 250g", price: 450 },
             { name: "Dry Fruits Mix 1kg", price: 1200 }
         ];
-
         const statuses = ['new', 'processing', 'shipped', 'delivered', 'cancelled'];
         const paymentStatuses = ['paid', 'pending', 'failed', 'refunded'];
 
         this.orders = [];
-
         for (let i = 1; i <= 50; i++) {
-            const customer = customers[Math.floor(Math.random() * customers.length)];
+            const cust = customers[Math.floor(Math.random() * customers.length)];
             const itemCount = Math.floor(Math.random() * 3) + 1;
             const items = [];
             let total = 0;
-
             for (let j = 0; j < itemCount; j++) {
-                const product = products[Math.floor(Math.random() * products.length)];
-                const quantity = Math.floor(Math.random() * 3) + 1;
-                const subtotal = product.price * quantity;
-                total += subtotal;
-
-                items.push({
-                    product: product.name,
-                    quantity: quantity,
-                    price: product.price,
-                    subtotal: subtotal
-                });
+                const prod = products[Math.floor(Math.random() * products.length)];
+                const qty = Math.floor(Math.random() * 3) + 1;
+                const sub = prod.price * qty;
+                total += sub;
+                items.push({ product: prod.name, quantity: qty, price: prod.price, subtotal: sub });
             }
 
             const orderDate = new Date();
             orderDate.setDate(orderDate.getDate() - Math.floor(Math.random() * 30));
-            
-            const deliveryDate = new Date(orderDate);
-            deliveryDate.setDate(deliveryDate.getDate() + Math.floor(Math.random() * 7) + 3);
-            
-            const actualDeliveryDate = Math.random() > 0.7 ? 
-                new Date(deliveryDate.getTime() - Math.floor(Math.random() * 3) * 24 * 60 * 60 * 1000) : null;
+
+            const expDate = new Date(orderDate);
+            expDate.setDate(expDate.getDate() + Math.floor(Math.random() * 7) + 3);
+
+            const actDate = Math.random() > 0.7 ? new Date(expDate) : null;
+            if (actDate) actDate.setDate(actDate.getDate() - Math.floor(Math.random() * 3));
 
             const status = statuses[Math.floor(Math.random() * statuses.length)];
-            const paymentStatus = paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)];
+            const payStatus = paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)];
 
             this.orders.push({
                 id: `ORD${String(i).padStart(4, '0')}`,
-                customer: customer,
+                customer: cust,
                 date: orderDate.toISOString().split('T')[0],
-                items: items,
-                total: total,
-                status: status,
-                paymentStatus: paymentStatus,
+                items,
+                total,
+                status,
+                paymentStatus: payStatus,
                 paymentMethod: Math.random() > 0.5 ? 'Credit Card' : 'UPI',
                 transactionId: `TXN${String(i).padStart(6, '0')}`,
                 deliveryMode: 'Standard',
-                trackingId: status === 'shipped' || status === 'delivered' ? `TRK${String(i).padStart(8, '0')}` : null,
-                expectedDelivery: deliveryDate.toISOString().split('T')[0],
-                actualDelivery: actualDeliveryDate ? actualDeliveryDate.toISOString().split('T')[0] : null,
+                trackingId: (status === 'shipped' || status === 'delivered') ? `TRK${String(i).padStart(8, '0')}` : null,
+                expectedDelivery: expDate.toISOString().split('T')[0],
+                actualDelivery: actDate ? actDate.toISOString().split('T')[0] : null,
                 adminNotes: ''
             });
         }
@@ -109,48 +100,25 @@ class OrderManager {
         localStorage.setItem('orders', JSON.stringify(this.orders));
     }
 
+    /* ---------------------------------------------------------- */
     setupEventListeners() {
-        // Pagination
+        // pagination
         document.getElementById('prev-page').addEventListener('click', () => {
-            if (this.currentPage > 1) {
-                this.currentPage--;
-                this.renderOrders();
-            }
+            if (this.currentPage > 1) { this.currentPage--; this.renderOrders(); }
         });
-
         document.getElementById('next-page').addEventListener('click', () => {
-            const totalPages = Math.ceil(this.filteredOrders.length / this.itemsPerPage);
-            if (this.currentPage < totalPages) {
-                this.currentPage++;
-                this.renderOrders();
-            }
+            const pages = Math.ceil(this.filteredOrders.length / this.itemsPerPage);
+            if (this.currentPage < pages) { this.currentPage++; this.renderOrders(); }
         });
 
-        // Search and filters
-        document.getElementById('search-input').addEventListener('input', () => {
-            this.applyFilters();
-        });
-
-        document.getElementById('status-filter').addEventListener('change', () => {
-            this.applyFilters();
-        });
-
-        document.getElementById('payment-filter').addEventListener('change', () => {
-            this.applyFilters();
-        });
-
-        document.getElementById('date-from').addEventListener('change', () => {
-            this.applyFilters();
-        });
-
-        document.getElementById('date-to').addEventListener('change', () => {
-            this.applyFilters();
-        });
-
-        document.getElementById('filter-btn').addEventListener('click', () => {
-            this.applyFilters();
-        });
-
+        // filters
+        const apply = () => this.applyFilters();
+        document.getElementById('search-input').addEventListener('input', apply);
+        document.getElementById('status-filter').addEventListener('change', apply);
+        document.getElementById('payment-filter').addEventListener('change', apply);
+        document.getElementById('date-from').addEventListener('change', apply);
+        document.getElementById('date-to').addEventListener('change', apply);
+        document.getElementById('filter-btn').addEventListener('click', apply);
         document.getElementById('reset-filters').addEventListener('click', () => {
             document.getElementById('search-input').value = '';
             document.getElementById('status-filter').value = '';
@@ -160,94 +128,55 @@ class OrderManager {
             this.applyFilters();
         });
 
-        // Bulk actions
-        document.getElementById('select-all').addEventListener('change', (e) => {
-            const checkboxes = document.querySelectorAll('.order-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = e.target.checked;
-                this.toggleOrderSelection(checkbox.dataset.id, checkbox.checked);
+        // bulk
+        document.getElementById('select-all').addEventListener('change', e => {
+            document.querySelectorAll('.order-checkbox').forEach(cb => {
+                cb.checked = e.target.checked;
+                this.toggleOrderSelection(cb.dataset.id, cb.checked);
             });
             this.updateBulkActions();
         });
+        document.getElementById('bulk-delete-btn').addEventListener('click', () => this.bulkDeleteOrders());
 
-        document.getElementById('bulk-delete-btn').addEventListener('click', () => {
-            this.bulkDeleteOrders();
-        });
+        // modal close
+        document.getElementById('close-modal').addEventListener('click', () => this.closeModal());
+        document.getElementById('close-modal-btn').addEventListener('click', () => this.closeModal());
+        document.getElementById('save-changes').addEventListener('click', () => this.saveOrderChanges());
+        document.getElementById('download-invoice').addEventListener('click', () => this.generateInvoice());
 
-        // Modal events
-        document.getElementById('close-modal').addEventListener('click', () => {
-            this.closeModal();
-        });
+        // invoice modal
+        document.getElementById('close-invoice-modal').addEventListener('click', () => this.closeInvoiceModal());
+        document.getElementById('close-invoice').addEventListener('click', () => this.closeInvoiceModal());
+        document.getElementById('print-invoice').addEventListener('click', () => this.printInvoice());
+        document.getElementById('download-pdf').addEventListener('click', () => this.downloadInvoicePDF());
 
-        document.getElementById('close-modal-btn').addEventListener('click', () => {
-            this.closeModal();
-        });
-
-        document.getElementById('save-changes').addEventListener('click', () => {
-            this.saveOrderChanges();
-        });
-
-        document.getElementById('download-invoice').addEventListener('click', () => {
-            this.generateInvoice();
-        });
-
-        // Invoice modal events
-        document.getElementById('close-invoice-modal').addEventListener('click', () => {
-            this.closeInvoiceModal();
-        });
-
-        document.getElementById('close-invoice').addEventListener('click', () => {
-            this.closeInvoiceModal();
-        });
-
-        document.getElementById('print-invoice').addEventListener('click', () => {
-            this.printInvoice();
-        });
-
-        document.getElementById('download-pdf').addEventListener('click', () => {
-            this.downloadInvoicePDF();
-        });
-
-        // Close modals when clicking outside
-        window.addEventListener('click', (e) => {
-            const orderModal = document.getElementById('order-details-modal');
-            const invoiceModal = document.getElementById('invoice-modal');
-            
-            if (e.target === orderModal) {
-                this.closeModal();
-            }
-            
-            if (e.target === invoiceModal) {
-                this.closeInvoiceModal();
-            }
+        // click outside modal
+        window.addEventListener('click', e => {
+            const oModal = document.getElementById('order-details-modal');
+            const iModal = document.getElementById('invoice-modal');
+            if (e.target === oModal) this.closeModal();
+            if (e.target === iModal) this.closeInvoiceModal();
         });
     }
 
+    /* ---------------------------------------------------------- */
     applyFilters() {
-        const searchTerm = document.getElementById('search-input').value.toLowerCase();
-        const statusFilter = document.getElementById('status-filter').value;
-        const paymentFilter = document.getElementById('payment-filter').value;
-        const dateFrom = document.getElementById('date-from').value;
-        const dateTo = document.getElementById('date-to').value;
+        const term = document.getElementById('search-input').value.toLowerCase();
+        const status = document.getElementById('status-filter').value;
+        const pay = document.getElementById('payment-filter').value;
+        const from = document.getElementById('date-from').value;
+        const to = document.getElementById('date-to').value;
 
-        this.filteredOrders = this.orders.filter(order => {
-            const matchesSearch = 
-                order.id.toLowerCase().includes(searchTerm) ||
-                order.customer.name.toLowerCase().includes(searchTerm) ||
-                order.customer.email.toLowerCase().includes(searchTerm);
-            
-            const matchesStatus = !statusFilter || order.status === statusFilter;
-            const matchesPayment = !paymentFilter || order.paymentStatus === paymentFilter;
-            
-            let matchesDate = true;
-            if (dateFrom && order.date < dateFrom) {
-                matchesDate = false;
-            }
-            if (dateTo && order.date > dateTo) {
-                matchesDate = false;
-            }
-            
-            return matchesSearch && matchesStatus && matchesPayment && matchesDate;
+        this.filteredOrders = this.orders.filter(o => {
+            const matchSearch = !term ||
+                o.id.toLowerCase().includes(term) ||
+                o.customer.name.toLowerCase().includes(term) ||
+                o.customer.email.toLowerCase().includes(term);
+            const matchStatus = !status || o.status === status;
+            const matchPay = !pay || o.paymentStatus === pay;
+            const afterFrom = !from || o.date >= from;
+            const beforeTo = !to || o.date <= to;
+            return matchSearch && matchStatus && matchPay && afterFrom && beforeTo;
         });
 
         this.currentPage = 1;
@@ -255,83 +184,71 @@ class OrderManager {
         this.updateStats();
     }
 
+    /* ---------------------------------------------------------- */
     renderOrders() {
-        const tableBody = document.getElementById('orders-table-body');
-        tableBody.innerHTML = '';
+        const tbody = document.getElementById('orders-table-body');
+        tbody.innerHTML = '';
 
-        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-        const endIndex = Math.min(startIndex + this.itemsPerPage, this.filteredOrders.length);
-        const currentOrders = this.filteredOrders.slice(startIndex, endIndex);
+        const start = (this.currentPage - 1) * this.itemsPerPage;
+        const end = Math.min(start + this.itemsPerPage, this.filteredOrders.length);
+        const page = this.filteredOrders.slice(start, end);
 
-        currentOrders.forEach(order => {
+        if (page.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="px-6 py-4 text-center text-gray-500">No orders found</td></tr>`;
+            this.updatePagination();
+            this.updateBulkActions();
+            return;
+        }
+
+        page.forEach(order => {
             const row = document.createElement('tr');
             row.className = 'order-row';
-            
-            // Format date
-            const orderDate = new Date(order.date);
-            const formattedDate = orderDate.toLocaleDateString('en-IN', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-            });
 
-            // Status badge
-            const statusClass = `status-${order.status}`;
-            const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
-            
-            // Payment status badge
-            const paymentClass = `payment-status-${order.paymentStatus}`;
-            const paymentText = order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1);
+            const fmtDate = new Date(order.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+            const statusClass = `status-badge status-${order.status}`;
+            const payClass = `status-badge payment-status-${order.paymentStatus}`;
 
             row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <input type="checkbox" class="order-checkbox rounded text-orange-500" data-id="${order.id}">
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.id}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4"><input type="checkbox" class="order-checkbox rounded text-orange-500" data-id="${order.id}"></td>
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">${order.id}</td>
+                <td class="px-6 py-4">
                     <div class="text-sm font-medium text-gray-900">${order.customer.name}</div>
-                    <div class="text-sm text-gray-500">${order.customer.email}</div>
+                    <div class="text-xs text-gray-500">${order.customer.email}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formattedDate}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.items.length} items</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹${order.total}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="status-badge ${paymentClass}">${paymentText}</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="status-badge ${statusClass}">${statusText}</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button class="text-blue-600 hover:text-blue-900 invoice-order mr-3" data-id="${order.id}">
-                        <i class="fas fa-file-invoice"></i> 
+                <td class="px-6 py-4 text-sm text-gray-900">${fmtDate}</td>
+                <td class="px-6 py-4 text-sm text-gray-900">${order.items.length} item(s)</td>
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">₹${order.total}</td>
+                <td class="px-6 py-4"><span class="${payClass}">${order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}</span></td>
+                <td class="px-6 py-4"><span class="${statusClass}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span></td>
+                <td class="px-6 py-4 text-sm space-x-2">
+                    <!-- VIEW BUTTON REMOVED -->
+                    <button class="text-blue-600 hover:text-blue-800 invoice-order" data-id="${order.id}" title="Invoice">
+                        <i class="fas fa-file-invoice"></i>
                     </button>
-                    <button class="text-red-600 hover:text-red-900 delete-order" data-id="${order.id}">
-                        <i class="fas fa-trash"></i> 
+                    <button class="text-red-600 hover:text-red-800 delete-order" data-id="${order.id}" title="Delete">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </td>
             `;
-
-            tableBody.appendChild(row);
+            tbody.appendChild(row);
         });
 
-        // Add event listeners to invoice and delete buttons
-        document.querySelectorAll('.invoice-order').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const orderId = e.target.closest('button').dataset.id;
-                this.generateInvoiceFromTable(orderId);
+        // ---- attach row-level listeners (only invoice and delete) ----
+        document.querySelectorAll('.invoice-order').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const id = e.currentTarget.dataset.id;
+                this.generateInvoiceFromTable(id);
             });
         });
-
-        document.querySelectorAll('.delete-order').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const orderId = e.target.closest('button').dataset.id;
-                this.deleteOrder(orderId);
+        document.querySelectorAll('.delete-order').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const id = e.currentTarget.dataset.id;
+                this.deleteOrder(id);
             });
         });
-
-        // Add event listeners to checkboxes
-        document.querySelectorAll('.order-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
+        document.querySelectorAll('.order-checkbox').forEach(cb => {
+            cb.addEventListener('change', e => {
                 this.toggleOrderSelection(e.target.dataset.id, e.target.checked);
                 this.updateBulkActions();
             });
@@ -341,250 +258,101 @@ class OrderManager {
         this.updateBulkActions();
     }
 
+    /* ---------------------------------------------------------- */
     updatePagination() {
-        const totalOrders = this.filteredOrders.length;
-        const totalPages = Math.ceil(totalOrders / this.itemsPerPage);
-        const startIndex = (this.currentPage - 1) * this.itemsPerPage + 1;
-        const endIndex = Math.min(this.currentPage * this.itemsPerPage, totalOrders);
+        const total = this.filteredOrders.length;
+        const pages = Math.ceil(total / this.itemsPerPage);
+        const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+        const end = Math.min(this.currentPage * this.itemsPerPage, total);
 
-        document.getElementById('pagination-start').textContent = startIndex;
-        document.getElementById('pagination-end').textContent = endIndex;
-        document.getElementById('pagination-total').textContent = totalOrders;
-
+        document.getElementById('pagination-start').textContent = total ? start : 0;
+        document.getElementById('pagination-end').textContent = end;
+        document.getElementById('pagination-total').textContent = total;
         document.getElementById('prev-page').disabled = this.currentPage === 1;
-        document.getElementById('next-page').disabled = this.currentPage === totalPages || totalPages === 0;
+        document.getElementById('next-page').disabled = this.currentPage >= pages || total === 0;
     }
 
     updateStats() {
-        const totalOrders = this.filteredOrders.length;
-        const pendingOrders = this.filteredOrders.filter(order => 
-            order.status === 'new' || order.status === 'processing').length;
-        const shippedOrders = this.filteredOrders.filter(order => order.status === 'shipped').length;
-        
-        // Calculate monthly revenue (current month)
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
-        const monthlyRevenue = this.filteredOrders
-            .filter(order => {
-                const orderDate = new Date(order.date);
-                return orderDate.getMonth() === currentMonth && 
-                       orderDate.getFullYear() === currentYear &&
-                       order.paymentStatus === 'paid';
-            })
-            .reduce((sum, order) => sum + order.total, 0);
+        const total = this.filteredOrders.length;
+        const pending = this.filteredOrders.filter(o => ['new', 'processing'].includes(o.status)).length;
+        const shipped = this.filteredOrders.filter(o => o.status === 'shipped').length;
 
-        document.getElementById('total-orders').textContent = totalOrders;
-        document.getElementById('pending-orders').textContent = pendingOrders;
-        document.getElementById('shipped-orders').textContent = shippedOrders;
-        document.getElementById('monthly-revenue').textContent = `₹${monthlyRevenue}`;
+        const now = new Date();
+        const monthRev = this.filteredOrders
+            .filter(o => {
+                const d = new Date(o.date);
+                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && o.paymentStatus === 'paid';
+            })
+            .reduce((s, o) => s + o.total, 0);
+
+        document.getElementById('total-orders').textContent = total;
+        document.getElementById('pending-orders').textContent = pending;
+        document.getElementById('shipped-orders').textContent = shipped;
+        document.getElementById('monthly-revenue').textContent = `₹${monthRev}`;
     }
 
-    toggleOrderSelection(orderId, isSelected) {
-        if (isSelected) {
-            this.selectedOrders.add(orderId);
-        } else {
-            this.selectedOrders.delete(orderId);
-        }
+    toggleOrderSelection(id, sel) {
+        sel ? this.selectedOrders.add(id) : this.selectedOrders.delete(id);
     }
 
     updateBulkActions() {
-        const bulkCount = document.getElementById('bulk-count');
-        const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+        const cnt = this.selectedOrders.size;
+        document.getElementById('bulk-count').textContent = cnt;
+        document.getElementById('bulk-delete-btn').disabled = cnt === 0;
+
+        const allCB = document.querySelectorAll('.order-checkbox');
+        const checked = Array.from(allCB).filter(c => c.checked).length;
         const selectAll = document.getElementById('select-all');
-
-        bulkCount.textContent = this.selectedOrders.size;
-        bulkDeleteBtn.disabled = this.selectedOrders.size === 0;
-
-        // Update select all checkbox state
-        const checkboxes = document.querySelectorAll('.order-checkbox');
-        const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
-        const someChecked = Array.from(checkboxes).some(cb => cb.checked);
-        
-        selectAll.checked = allChecked;
-        selectAll.indeterminate = someChecked && !allChecked;
+        selectAll.checked = checked === allCB.length;
+        selectAll.indeterminate = checked > 0 && checked < allCB.length;
     }
 
-    generateInvoiceFromTable(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (!order) return;
-
-        const invoiceContent = document.getElementById('invoice-content');
-        
-        // Format dates
-        const orderDate = new Date(order.date);
-        const formattedOrderDate = orderDate.toLocaleDateString('en-IN', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        });
-        
-        const deliveryDate = new Date(order.expectedDelivery);
-        const formattedDeliveryDate = deliveryDate.toLocaleDateString('en-IN', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        });
-
-        invoiceContent.innerHTML = `
-            <div class="invoice-header">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <img src="../assets/images/logoo bg.png" alt="Kunash Enterprises" class="invoice-logo">
-                        <h1 class="text-2xl font-bold text-orange-600">Kunash Enterprises</h1>
-                        <p class="text-gray-600">Premium Dry Fruits & Nuts</p>
-                        <p class="text-gray-600">Bangalore, Karnataka - 560001</p>
-                        <p class="text-gray-600">GSTIN: 29AAECK1234L1Z5</p>
-                    </div>
-                    <div class="text-right">
-                        <h2 class="text-3xl font-bold text-gray-800">INVOICE</h2>
-                        <p class="text-gray-600 mt-2">Invoice #: ${order.id}</p>
-                        <p class="text-gray-600">Date: ${formattedOrderDate}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-8 mb-8">
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Bill To:</h3>
-                    <p class="font-medium">${order.customer.name}</p>
-                    <p>${order.customer.address}</p>
-                    <p>${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}</p>
-                    <p>${order.customer.email}</p>
-                    <p>${order.customer.phone}</p>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Order Details:</h3>
-                    <p><span class="font-medium">Order ID:</span> ${order.id}</p>
-                    <p><span class="font-medium">Order Date:</span> ${formattedOrderDate}</p>
-                    <p><span class="font-medium">Expected Delivery:</span> ${formattedDeliveryDate}</p>
-                    <p><span class="font-medium">Payment Method:</span> ${order.paymentMethod}</p>
-                    <p><span class="font-medium">Status:</span> <span class="capitalize">${order.status}</span></p>
-                </div>
-            </div>
-
-            <table class="invoice-table">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                        <th>Unit Price</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${order.items.map(item => `
-                        <tr>
-                            <td>${item.product}</td>
-                            <td>${item.quantity}</td>
-                            <td>₹${item.price}</td>
-                            <td>₹${item.subtotal}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="3" class="text-right font-semibold">Subtotal:</td>
-                        <td class="font-semibold">₹${order.total}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="3" class="text-right font-semibold">Shipping:</td>
-                        <td class="font-semibold">₹0</td>
-                    </tr>
-                    <tr>
-                        <td colspan="3" class="text-right font-semibold">Total:</td>
-                        <td class="font-semibold text-lg">₹${order.total}</td>
-                    </tr>
-                </tfoot>
-            </table>
-
-            <div class="mt-8 text-center text-gray-600">
-                <p>Thank you for your business with Kunash Enterprises!</p>
-                <p class="mt-2">For any queries, contact us at support@kunash.com or call +91-9876543210</p>
-            </div>
-        `;
-
-        // Show invoice modal
-        document.getElementById('invoice-modal').style.display = 'flex';
-    }
-
+    /* ---------------------------------------------------------- */
     viewOrderDetails(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (!order) return;
+        const o = this.orders.find(x => x.id === orderId);
+        if (!o) return;
 
-        // Populate customer information
-        document.getElementById('customer-name').textContent = order.customer.name;
-        document.getElementById('customer-email').textContent = order.customer.email;
-        document.getElementById('customer-phone').textContent = order.customer.phone;
-        document.getElementById('customer-address').textContent = order.customer.address;
-        document.getElementById('customer-location').textContent = 
-            `${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}`;
+        // customer
+        document.getElementById('customer-name').textContent = o.customer.name;
+        document.getElementById('customer-email').textContent = o.customer.email;
+        document.getElementById('customer-phone').textContent = o.customer.phone;
+        document.getElementById('customer-address').textContent = o.customer.address;
+        document.getElementById('customer-location').textContent = `${o.customer.city}, ${o.customer.state} - ${o.customer.pincode}`;
 
-        // Populate order information
-        document.getElementById('modal-order-id').textContent = order.id;
-        
-        const orderDate = new Date(order.date);
-        document.getElementById('modal-order-date').textContent = 
-            orderDate.toLocaleDateString('en-IN', { 
-                day: '2-digit', 
-                month: 'long', 
-                year: 'numeric' 
-            });
-            
-        const deliveryDate = new Date(order.expectedDelivery);
-        document.getElementById('modal-delivery-date').textContent = 
-            deliveryDate.toLocaleDateString('en-IN', { 
-                day: '2-digit', 
-                month: 'long', 
-                year: 'numeric' 
-            });
-            
-        document.getElementById('modal-order-status').value = order.status;
+        // order
+        document.getElementById('modal-order-id').textContent = o.id;
+        document.getElementById('modal-order-date').textContent = new Date(o.date).toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+        document.getElementById('modal-delivery-date').textContent = new Date(o.expectedDelivery).toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+        document.getElementById('modal-order-status').value = o.status;
 
-        // Populate ordered items
+        // items
         const itemsBody = document.getElementById('modal-items-body');
         itemsBody.innerHTML = '';
-        
-        order.items.forEach(item => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td class="px-4 py-2 text-sm">${item.product}</td>
-                <td class="px-4 py-2 text-sm">${item.quantity}</td>
-                <td class="px-4 py-2 text-sm">₹${item.price}</td>
-                <td class="px-4 py-2 text-sm">₹${item.subtotal}</td>
-            `;
-            itemsBody.appendChild(row);
+        o.items.forEach(it => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td class="px-4 py-2 text-sm">${it.product}</td>
+                            <td class="px-4 py-2 text-sm">${it.quantity}</td>
+                            <td class="px-4 py-2 text-sm">₹${it.price}</td>
+                            <td class="px-4 py-2 text-sm">₹${it.subtotal}</td>`;
+            itemsBody.appendChild(tr);
         });
-        
-        document.getElementById('modal-total-amount').textContent = `₹${order.total}`;
+        document.getElementById('modal-total-amount').textContent = `₹${o.total}`;
 
-        // Populate payment details
-        document.getElementById('modal-payment-method').textContent = order.paymentMethod;
-        document.getElementById('modal-transaction-id').textContent = order.transactionId;
-        document.getElementById('modal-payment-status').value = order.paymentStatus;
+        // payment
+        document.getElementById('modal-payment-method').textContent = o.paymentMethod;
+        document.getElementById('modal-transaction-id').textContent = o.transactionId;
+        document.getElementById('modal-payment-status').value = o.paymentStatus;
 
-        // Populate delivery information
-        document.getElementById('modal-delivery-mode').textContent = order.deliveryMode;
-        document.getElementById('modal-tracking-id').textContent = order.trackingId || 'Not available';
-        
-        if (order.actualDelivery) {
-            const actualDeliveryDate = new Date(order.actualDelivery);
-            document.getElementById('modal-actual-delivery-date').textContent = 
-                actualDeliveryDate.toLocaleDateString('en-IN', { 
-                    day: '2-digit', 
-                    month: 'long', 
-                    year: 'numeric' 
-                });
-        } else {
-            document.getElementById('modal-actual-delivery-date').textContent = 'Not delivered yet';
-        }
+        // delivery
+        document.getElementById('modal-delivery-mode').textContent = o.deliveryMode;
+        document.getElementById('modal-tracking-id').textContent = o.trackingId || '—';
+        document.getElementById('modal-actual-delivery-date').textContent = o.actualDelivery ?
+            new Date(o.actualDelivery).toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' }) : 'Not delivered';
 
-        // Populate admin notes
-        document.getElementById('admin-notes').value = order.adminNotes || '';
-
-        // Store current order ID for saving changes
+        // notes
+        document.getElementById('admin-notes').value = o.adminNotes || '';
         document.getElementById('save-changes').dataset.orderId = orderId;
 
-        // Show modal
         document.getElementById('order-details-modal').style.display = 'flex';
     }
 
@@ -593,84 +361,72 @@ class OrderManager {
     }
 
     saveOrderChanges() {
-        const orderId = document.getElementById('save-changes').dataset.orderId;
-        const order = this.orders.find(o => o.id === orderId);
-        
-        if (!order) return;
+        const id = document.getElementById('save-changes').dataset.orderId;
+        const o = this.orders.find(x => x.id === id);
+        if (!o) return;
 
-        // Update order status
-        order.status = document.getElementById('modal-order-status').value;
-        
-        // Update payment status
-        order.paymentStatus = document.getElementById('modal-payment-status').value;
-        
-        // Update admin notes
-        order.adminNotes = document.getElementById('admin-notes').value;
+        o.status = document.getElementById('modal-order-status').value;
+        o.paymentStatus = document.getElementById('modal-payment-status').value;
+        o.adminNotes = document.getElementById('admin-notes').value;
 
         this.saveOrders();
         this.renderOrders();
         this.updateStats();
         this.closeModal();
-        
-        // Show success message
         this.showNotification('Order updated successfully!', 'success');
     }
 
-    deleteOrder(orderId) {
-        if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
-            return;
-        }
-
-        this.orders = this.orders.filter(order => order.id !== orderId);
+    deleteOrder(id) {
+        if (!confirm('Delete this order?')) return;
+        this.orders = this.orders.filter(o => o.id !== id);
         this.saveOrders();
-        this.applyFilters(); // Re-apply filters to update the view
-        
-        this.showNotification('Order deleted successfully!', 'success');
+        this.applyFilters();
+        this.showNotification('Order deleted', 'success');
     }
 
     bulkDeleteOrders() {
-        if (this.selectedOrders.size === 0) return;
-        
-        if (!confirm(`Are you sure you want to delete ${this.selectedOrders.size} order(s)? This action cannot be undone.`)) {
-            return;
-        }
-
-        this.orders = this.orders.filter(order => !this.selectedOrders.has(order.id));
+        if (!this.selectedOrders.size) return;
+        if (!confirm(`Delete ${this.selectedOrders.size} order(s)?`)) return;
+        this.orders = this.orders.filter(o => !this.selectedOrders.has(o.id));
         this.selectedOrders.clear();
         this.saveOrders();
         this.applyFilters();
-        
-        this.showNotification(`${this.selectedOrders.size} order(s) deleted successfully!`, 'success');
+        this.showNotification('Bulk delete complete', 'success');
+    }
+
+    /* ---------------------------------------------------------- */
+    generateInvoiceFromTable(orderId) {
+        const o = this.orders.find(x => x.id === orderId);
+        if (!o) return;
+        this._populateInvoice(o);
+        document.getElementById('invoice-modal').style.display = 'flex';
     }
 
     generateInvoice() {
-        const orderId = document.getElementById('save-changes').dataset.orderId;
-        const order = this.orders.find(o => o.id === orderId);
-        
-        if (!order) return;
+        const id = document.getElementById('save-changes').dataset.orderId;
+        const o = this.orders.find(x => x.id === id);
+        if (!o) return;
+        this._populateInvoice(o);
+        document.getElementById('invoice-modal').style.display = 'flex';
+    }
 
-        const invoiceContent = document.getElementById('invoice-content');
-        
-        // Format dates
-        const orderDate = new Date(order.date);
-        const formattedOrderDate = orderDate.toLocaleDateString('en-IN', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        });
-        
-        const deliveryDate = new Date(order.expectedDelivery);
-        const formattedDeliveryDate = deliveryDate.toLocaleDateString('en-IN', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        });
+    _populateInvoice(o) {
+        const orderDate = new Date(o.date).toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+        const expDate   = new Date(o.expectedDelivery).toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
 
-        invoiceContent.innerHTML = `
+        const itemsHTML = o.items.map(it => `
+            <tr>
+                <td>${it.product}</td>
+                <td>${it.quantity}</td>
+                <td>₹${it.price}</td>
+                <td>₹${it.subtotal}</td>
+            </tr>`).join('');
+
+        document.getElementById('invoice-content').innerHTML = `
             <div class="invoice-header">
                 <div class="flex justify-between items-start">
                     <div>
-                        <img src="../assets/images/logoo bg.png" alt="Kunash Enterprises" class="invoice-logo">
+                        <img src="../assets/images/logoo bg.png" alt="Kunash" class="invoice-logo">
                         <h1 class="text-2xl font-bold text-orange-600">Kunash Enterprises</h1>
                         <p class="text-gray-600">Premium Dry Fruits & Nuts</p>
                         <p class="text-gray-600">Bangalore, Karnataka - 560001</p>
@@ -678,8 +434,8 @@ class OrderManager {
                     </div>
                     <div class="text-right">
                         <h2 class="text-3xl font-bold text-gray-800">INVOICE</h2>
-                        <p class="text-gray-600 mt-2">Invoice #: ${order.id}</p>
-                        <p class="text-gray-600">Date: ${formattedOrderDate}</p>
+                        <p class="text-gray-600 mt-2">Invoice #: ${o.id}</p>
+                        <p class="text-gray-600">Date: ${orderDate}</p>
                     </div>
                 </div>
             </div>
@@ -687,65 +443,39 @@ class OrderManager {
             <div class="grid grid-cols-2 gap-8 mb-8">
                 <div>
                     <h3 class="text-lg font-semibold text-gray-700 mb-2">Bill To:</h3>
-                    <p class="font-medium">${order.customer.name}</p>
-                    <p>${order.customer.address}</p>
-                    <p>${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}</p>
-                    <p>${order.customer.email}</p>
-                    <p>${order.customer.phone}</p>
+                    <p class="font-medium">${o.customer.name}</p>
+                    <p>${o.customer.address}</p>
+                    <p>${o.customer.city}, ${o.customer.state} - ${o.customer.pincode}</p>
+                    <p>${o.customer.email}</p>
+                    <p>${o.customer.phone}</p>
                 </div>
                 <div>
                     <h3 class="text-lg font-semibold text-gray-700 mb-2">Order Details:</h3>
-                    <p><span class="font-medium">Order ID:</span> ${order.id}</p>
-                    <p><span class="font-medium">Order Date:</span> ${formattedOrderDate}</p>
-                    <p><span class="font-medium">Expected Delivery:</span> ${formattedDeliveryDate}</p>
-                    <p><span class="font-medium">Payment Method:</span> ${order.paymentMethod}</p>
-                    <p><span class="font-medium">Status:</span> <span class="capitalize">${order.status}</span></p>
+                    <p><span class="font-medium">Order ID:</span> ${o.id}</p>
+                    <p><span class="font-medium">Order Date:</span> ${orderDate}</p>
+                    <p><span class="font-medium">Expected Delivery:</span> ${expDate}</p>
+                    <p><span class="font-medium">Payment Method:</span> ${o.paymentMethod}</p>
+                    <p><span class="font-medium">Status:</span> ${o.status}</p>
                 </div>
             </div>
 
             <table class="invoice-table">
                 <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                        <th>Unit Price</th>
-                        <th>Amount</th>
-                    </tr>
+                    <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Amount</th></tr>
                 </thead>
-                <tbody>
-                    ${order.items.map(item => `
-                        <tr>
-                            <td>${item.product}</td>
-                            <td>${item.quantity}</td>
-                            <td>₹${item.price}</td>
-                            <td>₹${item.subtotal}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
+                <tbody>${itemsHTML}</tbody>
                 <tfoot>
-                    <tr>
-                        <td colspan="3" class="text-right font-semibold">Subtotal:</td>
-                        <td class="font-semibold">₹${order.total}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="3" class="text-right font-semibold">Shipping:</td>
-                        <td class="font-semibold">₹0</td>
-                    </tr>
-                    <tr>
-                        <td colspan="3" class="text-right font-semibold">Total:</td>
-                        <td class="font-semibold text-lg">₹${order.total}</td>
-                    </tr>
+                    <tr><td colspan="3" class="text-right font-semibold">Subtotal:</td><td class="font-semibold">₹${o.total}</td></tr>
+                    <tr><td colspan="3" class="text-right font-semibold">Shipping:</td><td class="font-semibold">₹0</td></tr>
+                    <tr><td colspan="3" class="text-right font-semibold">Total:</td><td class="font-semibold text-lg">₹${o.total}</td></tr>
                 </tfoot>
             </table>
 
             <div class="mt-8 text-center text-gray-600">
                 <p>Thank you for your business with Kunash Enterprises!</p>
-                <p class="mt-2">For any queries, contact us at support@kunash.com or call +91-9876543210</p>
+                <p class="mt-2">Contact us at support@kunash.com</p>
             </div>
         `;
-
-        // Show invoice modal
-        document.getElementById('invoice-modal').style.display = 'flex';
     }
 
     closeInvoiceModal() {
@@ -753,51 +483,37 @@ class OrderManager {
     }
 
     printInvoice() {
-        const invoiceElement = document.getElementById('invoice-content');
-        const originalContents = document.body.innerHTML;
-        
-        document.body.innerHTML = invoiceElement.innerHTML;
-        window.print();
-        document.body.innerHTML = originalContents;
-        
-        // Re-initialize the order manager after printing
-        this.init();
+        const content = document.getElementById('invoice-content').innerHTML;
+        const win = window.open('', '', 'width=800,height=600');
+        win.document.write(`<html><head><title>Invoice ${document.getElementById('modal-order-id')?.textContent}</title></head><body>${content}</body></html>`);
+        win.document.close();
+        win.print();
     }
 
     downloadInvoicePDF() {
-        const invoiceElement = document.getElementById('invoice-content');
-        
-        const options = {
+        const el = document.getElementById('invoice-content');
+        const opt = {
             margin: 10,
-            filename: `invoice_${document.getElementById('modal-order-id').textContent}.pdf`,
+            filename: `invoice_${document.getElementById('modal-order-id')?.textContent || 'unknown'}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
-
-        html2pdf().set(options).from(invoiceElement).save();
+        html2pdf().set(opt).from(el).save();
     }
 
-    showNotification(message, type = 'info') {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 animate-fadeIn ${
-            type === 'success' ? 'bg-green-500 text-white' : 
-            type === 'error' ? 'bg-red-500 text-white' : 
-            'bg-blue-500 text-white'
+    showNotification(msg, type = 'info') {
+        const div = document.createElement('div');
+        div.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 animate-fadeIn text-white ${
+            type==='success'?'bg-green-500':type==='error'?'bg-red-500':'bg-blue-500'
         }`;
-        notification.textContent = message;
-        
-        document.body.appendChild(notification);
-        
-        // Remove notification after 3 seconds
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
+        div.textContent = msg;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 3000);
     }
 }
 
-// Initialize the order manager when the page loads
+/* ---------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
     new OrderManager();
 });

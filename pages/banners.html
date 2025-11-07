@@ -151,46 +151,47 @@
     </div>
     <!-- ==================== MAIN CONTENT ==================== -->
     <div class="flex-1 flex flex-col overflow-hidden main-content ml-64 transition-all duration-300">
-        <header class="bg-white shadow-md sticky top-0 z-40">
-            <div class="flex justify-between items-center p-4 container mx-auto">
-                <div class="flex items-center space-x-4">
-                    <button id="sidebar-toggle" class="text-gray-600 hover:text-orange-600 focus:outline-none lg:hidden">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                        </svg>
-                    </button>
-                    <h2 class="text-xl font-semibold text-orange-600">Manage Banners</h2>
-                </div>
-                <div class="relative">
-                    <button id="profile-dropdown-btn" class="flex items-center space-x-3 text-gray-700 hover:text-orange-600 focus:outline-none transition">
-                        <div class="text-right hidden sm:block">
-                            <p class="text-sm font-medium">Welcome, Admin</p>
-                            <p class="text-xs text-gray-500">admin@kunash.com</p>
+        <!-- Header -->
+            <header class="bg-white shadow-md sticky top-0 z-50">
+                <div class="flex justify-between items-center p-4 container mx-auto">
+                    <div class="flex items-center space-x-4">
+                        <button id="sidebar-toggle" class="text-gray-600 hover:text-orange-600 focus:outline-none lg:hidden">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                        <h2 class="text-xl font-semibold text-orange-600">Kunash Enterprises Admin</h2>
+                    </div>
+                    <div class="relative">
+                        <button id="profile-dropdown-btn" class="flex items-center space-x-3 text-gray-700 hover:text-orange-600 focus:outline-none transition">
+                            <div class="text-right hidden sm:block">
+                                <p class="text-sm font-medium">Welcome, Admin</p>
+                                <p class="text-xs text-gray-500">admin@kunash.com</p>
+                            </div>
+                            <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">A</div>
+                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="profile-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 hidden z-50 animate-fadeIn">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <p class="text-sm font-semibold text-gray-800">Admin User</p>
+                                <p class="text-xs text-gray-500">admin@kunash.com</p>
+                            </div>
+                            <a href="pages/profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                                <span class="material-icons text-lg mr-2">person</span> My Profile
+                            </a>
+                            <!-- <a href="pages/settings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                                <span class="material-icons text-lg mr-2">settings</span> Settings
+                            </a> -->
+                            <hr class="my-1 border-gray-200">
+                            <a href="login.html" id="logout-btn" class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">
+                                <span class="material-icons text-lg mr-2">logout</span> Logout
+                            </a>
                         </div>
-                        <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">A</div>
-                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </button>
-                    <div id="profile-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 hidden z-50">
-                        <div class="px-4 py-2 border-b border-gray-100">
-                            <p class="text-sm font-semibold text-gray-800">Admin User</p>
-                            <p class="text-xs text-gray-500">admin@kunash.com</p>
-                        </div>
-                        <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                            <span class="material-icons text-lg mr-2">person</span> My Profile
-                        </a>
-                        <a href="settings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                            <span class="material-icons text-lg mr-2">settings</span> Settings
-                        </a>
-                        <hr class="my-1 border-gray-200">
-                        <a href="../login.html" id="logout-btn" class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">
-                            <span class="material-icons text-lg mr-2">logout</span> Logout
-                        </a>
                     </div>
                 </div>
-            </div>
-        </header>
+            </header>
         <main class="flex-1 overflow-y-auto p-6 container mx-auto">
             <!-- Stats -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -442,50 +443,100 @@
     </div>
 </div>
 
-<!-- ==================== PROFILE + SIDEBAR JS ==================== -->
-<script>
-    function updateHeaderProfile(){
-        const p=JSON.parse(localStorage.getItem('adminProfile'))||{name:"Admin User",email:"admin@kunash.com",photo:""};
-        const av=document.querySelector('header .w-10.h-10.bg-orange-500');
-        const nameEl=document.querySelector('header .text-right p.font-medium');
-        const emailEl=document.querySelector('header .text-right p.text-xs');
-        const dName=document.querySelector('#profile-dropdown p.font-semibold');
-        const dEmail=document.querySelector('#profile-dropdown p.text-xs');
-        if(!av) return;
-        let img=av.querySelector('img'),letter=av.querySelector('span');
-        if(p.photo){
-            if(!img){img=document.createElement('img');img.className='w-full h-full rounded-full object-cover';av.innerHTML='';av.appendChild(img);}
-            img.src=p.photo;
-        }else{
-            if(!letter){letter=document.createElement('span');letter.className='text-white font-bold text-lg';av.innerHTML='';av.appendChild(letter);}
-            letter.textContent=p.name.charAt(0).toUpperCase();
+ <script>
+        // Profile Update
+        function updateHeaderProfile() {
+            const profile = JSON.parse(localStorage.getItem('adminProfile')) || { name: "Admin User", email: "admin@kunash.com", photo: "" };
+            const avatar = document.querySelector('header .w-10.h-10.bg-orange-500');
+            const nameEl = document.querySelector('header .text-right p.font-medium');
+            const emailEl = document.querySelector('header .text-right p.text-xs');
+            const ddName = document.querySelector('#profile-dropdown p.font-semibold');
+            const ddEmail = document.querySelector('#profile-dropdown p.text-xs');
+
+            if (!avatar) return;
+            let img = avatar.querySelector('img'), letter = avatar.querySelector('span');
+            if (profile.photo) {
+                if (!img) { img = document.createElement('img'); img.className = 'w-full h-full rounded-full object-cover'; avatar.innerHTML = ''; avatar.appendChild(img); }
+                img.src = profile.photo;
+            } else {
+                if (!letter) { letter = document.createElement('span'); letter.className = 'text-white font-bold text-lg'; avatar.innerHTML = ''; avatar.appendChild(letter); }
+                letter.textContent = profile.name.charAt(0).toUpperCase();
+            }
+            if (nameEl) nameEl.textContent = profile.name;
+            if (emailEl) emailEl.textContent = profile.email;
+            if (ddName) ddName.textContent = profile.name;
+            if (ddEmail) ddEmail.textContent = profile.email;
         }
-        if(nameEl)nameEl.textContent=p.name;
-        if(emailEl)emailEl.textContent=p.email;
-        if(dName)dName.textContent=p.name;
-        if(dEmail)dEmail.textContent=p.email;
-    }
-    document.addEventListener('DOMContentLoaded',updateHeaderProfile);
-    window.addEventListener('storage',e=>{if(e.key==='adminProfile')updateHeaderProfile()});
-    window.addEventListener('profileUpdated',updateHeaderProfile);
-    const sidebar=document.getElementById('sidebar'),main=document.querySelector('.main-content'),
-          toggle=document.getElementById('toggle-btn'),icon=toggle.querySelector('.material-icons'),
-          mobileToggle=document.getElementById('sidebar-toggle');let collapsed=false;
-    toggle.addEventListener('click',()=>{collapsed=!collapsed;
-        if(collapsed){sidebar.classList.add('sidebar-collapsed');main.classList.remove('ml-64');main.classList.add('ml-20');icon.textContent='chevron_right'}
-        else{sidebar.classList.remove('sidebar-collapsed');main.classList.remove('ml-20');main.classList.add('ml-64');icon.textContent='chevron_left'}
-    });
-    mobileToggle?.addEventListener('click',()=>{sidebar.classList.toggle('-translate-x-full')});
-    document.addEventListener('click',e=>{if(window.innerWidth<1024){const inside=sidebar.contains(e.target)||(mobileToggle&&mobileToggle.contains(e.target));
-        if(!inside && !sidebar.classList.contains('-translate-x-full'))sidebar.classList.add('-translate-x-full')}});
-    window.addEventListener('resize',()=>{if(window.innerWidth>=1024){sidebar.classList.remove('-translate-x-full');if(!collapsed)main.classList.add('ml-64')}
-        else main.classList.remove('ml-64','ml-20')});
-    document.addEventListener('click',e=>{const d=document.getElementById('profile-dropdown'),b=document.getElementById('profile-dropdown-btn');
-        if(d&&b&&!b.contains(e.target)&&!d.contains(e.target))d.classList.add('hidden')});
-    document.getElementById('logout-btn')?.addEventListener('click',()=>{if(confirm('Logout?')){
-        localStorage.removeItem('adminAuth');sessionStorage.clear();window.location.href='../login.html'}});
-    document.querySelectorAll('#sidebar a').forEach(l=>{if(l.href===window.location.href){l.classList.remove('hover:bg-orange-500');l.classList.add('bg-orange-600','font-semibold')}});
-</script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeaderProfile();
+            const ddBtn = document.getElementById('profile-dropdown-btn');
+            const dd = document.getElementById('profile-dropdown');
+            if (ddBtn && dd) ddBtn.onclick = () => dd.classList.toggle('hidden');
+        });
+
+        window.addEventListener('storage', e => { if (e.key === 'adminProfile') updateHeaderProfile(); });
+        window.addEventListener('profileUpdated', updateHeaderProfile);
+
+        // Sidebar Toggle
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const toggleIcon = toggleBtn.querySelector('.material-icons');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        let collapsed = false;
+
+        toggleBtn.addEventListener('click', () => {
+            collapsed = !collapsed;
+            if (collapsed) {
+                sidebar.classList.add('sidebar-collapsed');
+                mainContent.classList.remove('ml-64'); mainContent.classList.add('ml-20');
+                toggleIcon.textContent = 'chevron_right';
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+                mainContent.classList.remove('ml-20'); mainContent.classList.add('ml-64');
+                toggleIcon.textContent = 'chevron_left';
+            }
+        });
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('-translate-x-full'));
+        }
+
+        document.addEventListener('click', e => {
+            if (window.innerWidth < 1024) {
+                const inside = sidebar.contains(e.target) || (sidebarToggle && sidebarToggle.contains(e.target));
+                if (!inside && !sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('-translate-x-full');
+                if (!collapsed) mainContent.classList.add('ml-64');
+            } else {
+                mainContent.classList.remove('ml-64', 'ml-20');
+            }
+        });
+
+        // Close dropdown on outside click
+        document.addEventListener('click', e => {
+            const dd = document.getElementById('profile-dropdown');
+            const btn = document.getElementById('profile-dropdown-btn');
+            if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) dd.classList.add('hidden');
+        });
+
+        // Logout
+        document.getElementById('logout-btn')?.addEventListener('click', () => {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('adminAuth');
+                sessionStorage.clear();
+                window.location.href = '../login.html';
+            }
+        });
+    </script>
 <script src="../assets/js/main.js"></script>
 <script src="../assets/js/banners.js"></script>
 </body>

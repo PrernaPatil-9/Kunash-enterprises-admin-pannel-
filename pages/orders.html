@@ -1,703 +1,482 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Management - Kunash Enterprises Admin</title>
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- html2pdf -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
     <link rel="stylesheet" href="../assets/css/orders.css">
+
     <style>
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        .animate-fadeIn { animation: fadeIn .5s ease-out forwards; }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .stat-card { transition:all .3s ease; }
+        .stat-card:hover { transform:translateY(-5px); box-shadow:0 10px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04); }
+
+        .order-row { transition:all .2s ease; }
+        .order-row:hover { background:#fef7ed; }
+
+        .status-badge { @apply px-2 py-1 rounded-full text-xs font-semibold; }
+        .status-new          { @apply bg-blue-100   text-blue-800; }
+        .status-processing   { @apply bg-amber-100  text-amber-800; }
+        .status-shipped      { @apply bg-emerald-100 text-emerald-800; }
+        .status-delivered    { @apply bg-green-100   text-green-800; }
+        .status-cancelled    { @apply bg-red-100     text-red-800; }
+
+        .payment-status-paid     { @apply bg-emerald-100 text-emerald-800; }
+        .payment-status-pending  { @apply bg-amber-100  text-amber-800; }
+        .payment-status-failed   { @apply bg-red-100    text-red-800; }
+        .payment-status-refunded { @apply bg-indigo-100 text-indigo-800; }
+
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; align-items:center; justify-content:center; }
+        .modal-content { @apply bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6; }
+
+        .sidebar-collapsed { width:5rem !important; }
+        .sidebar-collapsed .sidebar-logo { width:3rem !important; height:3rem !important; }
+        .sidebar-collapsed .sidebar-text { display:none; }
+        .main-content { transition:margin-left .3s ease; }
+
+        .table-container { max-height:60vh; overflow:auto; }
+
+        .filter-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; width:100%; }
+        .filter-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+        @media (min-width:768px){
+            .filter-grid{grid-template-columns:2fr 1fr 1fr 1fr 1fr;}
+            .filter-actions{margin-top:0;justify-content:flex-start;}
         }
+        @media (max-width:767px){.filter-actions{justify-content:center;}}
 
-        .animate-fadeIn {
-            animation: fadeIn .5s ease-out forwards;
-        }
-
-        .stat-card {
-            transition: all .3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, .1), 0 10px 10px -5px rgba(0, 0, 0, .04);
-        }
-
-        .order-row {
-            transition: all .2s ease;
-        }
-
-        .order-row:hover {
-            background: #fef7ed;
-        }
-
-        .status-badge {
-            @apply px-2 py-1 rounded-full text-xs font-semibold;
-        }
-
-        .status-new {
-            @apply bg-blue-100 text-blue-800;
-        }
-
-        .status-processing {
-            @apply bg-amber-100 text-amber-800;
-        }
-
-        .status-shipped {
-            @apply bg-emerald-100 text-emerald-800;
-        }
-
-        .status-delivered {
-            @apply bg-green-100 text-green-800;
-        }
-
-        .status-cancelled {
-            @apply bg-red-100 text-red-800;
-        }
-
-        .payment-status-paid {
-            @apply bg-emerald-100 text-emerald-800;
-        }
-
-        .payment-status-pending {
-            @apply bg-amber-100 text-amber-800;
-        }
-
-        .payment-status-failed {
-            @apply bg-red-100 text-red-800;
-        }
-
-        .payment-status-refunded {
-            @apply bg-indigo-100 text-indigo-800;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .5);
-            z-index: 50;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            @apply bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6;
-        }
-
-        .sidebar-collapsed {
-            width: 5rem !important;
-        }
-
-        .sidebar-collapsed .sidebar-logo {
-            width: 3rem !important;
-            height: 3rem !important;
-        }
-
-        .sidebar-collapsed .sidebar-text {
-            display: none;
-        }
-
-        .main-content {
-            transition: margin-left 0.3s ease;
-        }
-
-        .table-container {
-            max-height: 60vh;
-            overflow: auto;
-        }
-
-        /* Custom styles for filter section */
-        .filter-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 12px;
-            width: 100%;
-        }
-
-        .filter-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            margin-top: 16px;
-        }
-
-        @media (min-width: 768px) {
-            .filter-grid {
-                grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-            }
-
-            .filter-actions {
-                margin-top: 0;
-                justify-content: flex-start;
-            }
-        }
-
-        @media (max-width: 767px) {
-            .filter-actions {
-                justify-content: center;
-            }
-        }
-
-        /* Invoice Styles */
-        .invoice-container {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 20mm;
-            margin: 10mm auto;
-            background: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            font-family: Arial, sans-serif;
-        }
-
-        .invoice-header {
-            border-bottom: 2px solid #f59e0b;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-
-        .invoice-logo {
-            height: 80px;
-            margin-bottom: 10px;
-        }
-
-        .invoice-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        .invoice-table th {
-            background: #f8fafc;
-            padding: 12px;
-            text-align: left;
-            border: 1px solid #e2e8f0;
-            font-weight: 600;
-        }
-
-        .invoice-table td {
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .invoice-totals {
-            width: 300px;
-            margin-left: auto;
-            margin-top: 20px;
-        }
-
-        .invoice-totals tr td:last-child {
-            text-align: right;
-            font-weight: 600;
-        }
-
-        /* NEW: Scrollable invoice container */
-        .invoice-scroll-container {
-            max-height: 70vh;
-            overflow-y: auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 16px;
-        }
+        .invoice-container{width:210mm;min-height:297mm;padding:20mm;margin:10mm auto;background:white;box-shadow:0 0 10px rgba(0,0,0,0.1);font-family:Arial,sans-serif;}
+        .invoice-header{border-bottom:2px solid #f59e0b;padding-bottom:20px;margin-bottom:30px;}
+        .invoice-logo{height:80px;margin-bottom:10px;}
+        .invoice-table{width:100%;border-collapse:collapse;margin:20px 0;}
+        .invoice-table th{background:#f8fafc;padding:12px;text-align:left;border:1px solid #e2e8f0;font-weight:600;}
+        .invoice-table td{padding:12px;border:1px solid #e2e8f0;}
+        .invoice-totals{width:300px;margin-left:auto;margin-top:20px;}
+        .invoice-totals tr td:last-child{text-align:right;font-weight:600;}
+        .invoice-scroll-container{max-height:70vh;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;padding:16px;}
     </style>
 </head>
 
 <body class="bg-gray-50 font-sans">
-    <div class="flex h-screen">
-        <!-- Sidebar -->
-        <div id="sidebar" class="w-64 bg-gray-800 text-white transition-all duration-300 fixed inset-y-0 left-0 z-20 flex flex-col">
-            <div class="p-4 flex items-center justify-between">
-                <img src="../assets/images/logoo bg.png" alt="Kunash Logo"
-                     class="w-[10rem] h-[4rem] object-contain transition-all duration-300 sidebar-logo">
-                <button id="toggle-btn" class="text-white p-1 rounded hover:bg-gray-700">
-                    <span class="material-icons text-xl">chevron_left</span>
-                </button>
-            </div>
-            <nav class="mt-4 space-y-1 flex-1 px-2">
-                <a href="../index.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">dashboard</span><span class="sidebar-text">Dashboard</span></a>
-                <a href="products.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">inventory_2</span><span class="sidebar-text">Products</span></a>
-                <a href="inventory.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">warehouse</span><span class="sidebar-text">Inventory</span></a>
-                <a href="orders.html" class="flex items-center py-2 px-3 bg-orange-600 font-semibold hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">shopping_cart</span><span class="sidebar-text">Orders</span></a>
-                <a href="customers.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">people</span><span class="sidebar-text">Customers</span></a>
-                <a href="banners.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">image</span><span class="sidebar-text">Banners</span></a>
-                <a href="messages.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">mail</span><span class="sidebar-text">Messages</span></a>
-                <a href="discounts.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">local_offer</span><span class="sidebar-text">Discount Management</span></a>
-                <a href="admins.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">admin_panel_settings</span><span class="sidebar-text">Admin Management</span></a>
-                <a href="../login.html" id="logout-btn" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition mt-4">
-                    <span class="material-icons mr-3">logout</span><span class="sidebar-text">Logout</span></a>
-            </nav>
+<div class="flex h-screen">
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <div id="sidebar" class="w-64 bg-gray-800 text-white transition-all duration-300 fixed inset-y-0 left-0 z-20 flex flex-col">
+        <div class="p-4 flex items-center justify-between">
+            <img src="../assets/images/logoo bg.png" alt="Kunash Logo"
+                 class="w-[10rem] h-[4rem] object-contain transition-all duration-300 sidebar-logo">
+            <button id="toggle-btn" class="text-white p-1 rounded hover:bg-gray-700">
+                <span class="material-icons text-xl">chevron_left</span>
+            </button>
         </div>
+        <nav class="mt-4 space-y-1 flex-1 px-2">
+            <a href="../index.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">dashboard</span><span class="sidebar-text">Dashboard</span></a>
+            <a href="products.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">inventory_2</span><span class="sidebar-text">Products</span></a>
+            <a href="inventory.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">warehouse</span><span class="sidebar-text">Inventory</span></a>
+            <a href="orders.html" class="flex items-center py-2 px-3 bg-orange-600 font-semibold hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">shopping_cart</span><span class="sidebar-text">Orders</span></a>
+            <a href="customers.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">people</span><span class="sidebar-text">Customers</span></a>
+            <a href="banners.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">image</span><span class="sidebar-text">Banners</span></a>
+            <a href="messages.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">mail</span><span class="sidebar-text">Messages</span></a>
+            <a href="discounts.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">local_offer</span><span class="sidebar-text">Discount Management</span></a>
+            <a href="admins.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">admin_panel_settings</span><span class="sidebar-text">Admin Management</span></a>
+            <a href="../login.html" id="logout-btn" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition mt-4">
+                <span class="material-icons mr-3">logout</span><span class="sidebar-text">Logout</span></a>
+        </nav>
+    </div>
 
-        <!-- ==================== MAIN CONTENT ==================== -->
-        <div class="flex-1 flex flex-col overflow-hidden main-content ml-64 transition-all duration-300">
-            <!-- Header -->
-            <header class="bg-white shadow-md sticky top-0 z-50">
-                <div class="flex items-center justify-between p-4 container mx-auto">
-                    <div class="flex items-center space-x-4">
-                        <button id="sidebar-toggle" class="lg:hidden text-gray-600 hover:text-orange-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-                        <h2 class="text-xl font-semibold text-orange-600">Kunash Enterprises Admin</h2>
-                    </div>
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <div class="flex-1 flex flex-col overflow-hidden main-content ml-64 transition-all duration-300">
 
-                    <div class="relative">
-                        <button id="profile-dropdown-btn"
+        <!-- Header -->
+        <header class="bg-white shadow-md sticky top-0 z-50">
+            <div class="flex items-center justify-between p-4 container mx-auto">
+                <div class="flex items-center space-x-4">
+                    <button id="sidebar-toggle" class="lg:hidden text-gray-600 hover:text-orange-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                    <h2 class="text-xl font-semibold text-orange-600">Kunash Enterprises Admin</h2>
+                </div>
+
+                <div class="relative">
+                    <button id="profile-dropdown-btn"
                             class="flex items-center space-x-3 text-gray-700 hover:text-orange-600 focus:outline-none transition">
-                            <div class="text-right hidden sm:block">
-                                <p class="text-sm font-medium">Welcome, Admin</p>
-                                <p class="text-xs text-gray-500">admin@kunash.com</p>
-                            </div>
-                            <div
-                                class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
-                                A
-                            </div>
-                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-
-                        <div id="profile-dropdown"
-                            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 hidden z-50 animate-fadeIn">
-                            <div class="px-4 py-2 border-b border-gray-100">
-                                <p class="text-sm font-semibold text-gray-800">Admin User</p>
-                                <p class="text-xs text-gray-500">admin@kunash.com</p>
-                            </div>
-                            <a href="profile.html"
-                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                                <span class="material-icons text-lg mr-2">person</span> My Profile
-                            </a>
-                            <a href="settings.html"
-                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                                <span class="material-icons text-lg mr-2">settings</span> Settings
-                            </a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="../login.html" id="logout-btn"
-                                class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">
-                                <span class="material-icons text-lg mr-2">logout</span> Logout
-                            </a>
+                        <div class="text-right hidden sm:block">
+                            <p class="text-sm font-medium">Welcome, Admin</p>
+                            <p class="text-xs text-gray-500">admin@kunash.com</p>
                         </div>
+                        <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">A</div>
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="profile-dropdown"
+                         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 hidden z-50 animate-fadeIn">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-sm font-semibold text-gray-800">Admin User</p>
+                            <p class="text-xs text-gray-500">admin@kunash.com</p>
+                        </div>
+                        <a href="profile.html"
+                           class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                            <span class="material-icons text-lg mr-2">person</span> My Profile
+                        </a>
+                        <hr class="my-1 border-gray-200">
+                        <a href="../login.html" id="logout-btn"
+                           class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">
+                            <span class="material-icons text-lg mr-2">logout</span> Logout
+                        </a>
                     </div>
                 </div>
-            </header>
+            </div>
+        </header>
 
-            <main class="flex-1 overflow-y-auto p-4 md:p-6 container mx-auto">
-                <!-- Header + Bulk Actions -->
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                    <h2 class="text-3xl font-bold text-orange-600 animate-fadeIn">Order Management</h2>
-                    <div class="flex flex-wrap gap-2">
-                        <!-- CHANGED: "Bulk Delete" → "Delete" -->
-                        <button id="bulk-delete-btn"
+        <!-- ==================== PAGE CONTENT ==================== -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 container mx-auto">
+
+            <!-- Header + Bulk Actions -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <h2 class="text-3xl font-bold text-orange-600 animate-fadeIn">Order Management</h2>
+                <div class="flex flex-wrap gap-2">
+                    <button id="bulk-delete-btn"
                             class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-80"
                             disabled>
-                            <i class="fas fa-trash mr-1"></i> Delete (<span id="bulk-count">0</span>)
+                        <i class="fas fa-trash mr-1"></i> Delete (<span id="bulk-count">0</span>)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500 animate-fadeIn">
+                    <h3 class="text-lg font-semibold text-gray-600 flex items-center"><i class="fas fa-shopping-cart mr-2 text-orange-500"></i>Total Orders</h3>
+                    <p id="total-orders" class="text-3xl font-bold text-orange-600 mt-2">0</p>
+                </div>
+                <div class="stat-card bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500 animate-fadeIn">
+                    <h3 class="text-lg font-semibold text-gray-600 flex items-center"><i class="fas fa-clock mr-2 text-orange-500"></i>Pending Orders</h3>
+                    <p id="pending-orders" class="text-3xl font-bold text-orange-600 mt-2">0</p>
+                </div>
+                <div class="stat-card bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500 animate-fadeIn">
+                    <h3 class="text-lg font-semibold text-gray-600 flex items-center"><i class="fas fa-truck mr-2 text-orange-500"></i>Shipped Orders</h3>
+                    <p id="shipped-orders" class="text-3xl font-bold text-orange-600 mt-2">0</p>
+                </div>
+                <div class="stat-card bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500 animate-fadeIn">
+                    <h3 class="text-lg font-semibold text-gray-600 flex items-center"><i class="fas fa-rupee-sign mr-2 text-orange-500"></i>Monthly Revenue</h3>
+                    <p id="monthly-revenue" class="text-3xl font-bold text-orange-600 mt-2">₹0</p>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6 animate-fadeIn">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 items-center">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
+                        <input type="text" id="search-input" placeholder="Search"
+                               class="w-full pl-8 pr-2 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    </div>
+
+                    <select id="status-filter"
+                            class="w-full px-2 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <option value="">Status</option>
+                        <option value="new">New</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+
+                    <select id="payment-filter"
+                            class="w-full px-2 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <option value="">Payment</option>
+                        <option value="paid">Paid</option>
+                        <option value="pending">Pending</option>
+                        <option value="failed">Failed</option>
+                        <option value="refunded">Refunded</option>
+                    </select>
+
+                    <input type="date" id="date-from"
+                           class="w-full px-2 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    <input type="date" id="date-to"
+                           class="w-full px-2 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+
+                    <div class="flex gap-2 justify-center">
+                        <button id="filter-btn"
+                                class="px-3 py-2 bg-orange-500 text-white rounded-md text-sm hover:bg-orange-600 flex items-center">
+                            <i class="fas fa-filter mr-1"></i> Filter
+                        </button>
+                        <button id="reset-filters"
+                                class="px-3 py-2 bg-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-400 flex items-center">
+                            <i class="fas fa-undo mr-1"></i> Reset
                         </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Stats -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div
-                        class="stat-card bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500 animate-fadeIn">
-                        <h3 class="text-lg font-semibold text-gray-600 flex items-center"><i
-                                class="fas fa-shopping-cart mr-2 text-orange-500"></i>Total Orders</h3>
-                        <p id="total-orders" class="text-3xl font-bold text-orange-600 mt-2">0</p>
-                    </div>
-                    <div
-                        class="stat-card bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500 animate-fadeIn">
-                        <h3 class="text-lg font-semibold text-gray-600 flex items-center"><i
-                                class="fas fa-clock mr-2 text-orange-500"></i>Pending Orders</h3>
-                        <p id="pending-orders" class="text-3xl font-bold text-orange-600 mt-2">0</p>
-                    </div>
-                    <div
-                        class="stat-card bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500 animate-fadeIn">
-                        <h3 class="text-lg font-semibold text-gray-600 flex items-center"><i
-                                class="fas fa-truck mr-2 text-orange-500"></i>Shipped Orders</h3>
-                        <p id="shipped-orders" class="text-3xl font-bold text-orange-600 mt-2">0</p>
-                    </div>
-                    <div
-                        class="stat-card bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500 animate-fadeIn">
-                        <h3 class="text-lg font-semibold text-gray-600 flex items-center"><i
-                                class="fas fa-rupee-sign mr-2 text-orange-500"></i>Monthly Revenue</h3>
-                        <p id="monthly-revenue" class="text-3xl font-bold text-orange-600 mt-2">₹0</p>
-                    </div>
+            <!-- Table -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden animate-fadeIn">
+                <div class="table-container">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0 z-10">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                <input type="checkbox" id="select-all" class="rounded text-orange-500">
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="orders-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                    </table>
                 </div>
 
-                <!-- Filters -->
-                <div class="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6 animate-fadeIn">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 items-center">
+                <div class="bg-white px-4 py-3 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
+                    <p class="text-sm text-gray-700 mb-2 sm:mb-0">
+                        Showing <span id="pagination-start">0</span> to <span id="pagination-end">0</span> of <span id="pagination-total">0</span> results
+                    </p>
+                    <div class="flex space-x-2">
+                        <button id="prev-page"
+                                class="px-4 py-2 border rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                                disabled>Previous</button>
+                        <button id="next-page"
+                                class="px-4 py-2 border rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                                disabled>Next</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
 
-                        <!-- Search -->
-                        <div class="relative">
-                            <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
-                            <input type="text" id="search-input" placeholder="Search"
-                                class="w-full pl-8 pr-2 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                        </div>
+<!-- ==================== ORDER DETAILS MODAL ==================== -->
+<div id="order-details-modal" class="modal">
+    <div class="modal-content">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-orange-600">Order Details</h3>
+            <button id="close-modal" class="text-gray-500 hover:text-gray-700"><i class="fas fa-times text-xl"></i></button>
+        </div>
 
-                        <!-- Status -->
-                        <select id="status-filter"
-                            class="w-full px-2 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                            <option value="">Status</option>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-user mr-2 text-orange-500"></i> Customer Information</h4>
+                <div class="space-y-2 text-sm">
+                    <p><span class="font-medium">Name:</span> <span id="customer-name">-</span></p>
+                    <p><span class="font-medium">Email:</span> <span id="customer-email">-</span></p>
+                    <p><span class="font-medium">Phone:</span> <span id="customer-phone">-</span></p>
+                    <p><span class="font-medium">Address:</span> <span id="customer-address">-</span></p>
+                    <p><span class="font-medium">City/State/Pin:</span> <span id="customer-location">-</span></p>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-shopping-bag mr-2 text-orange-500"></i> Order Information</h4>
+                <div class="space-y-2 text-sm">
+                    <p><span class="font-medium">Order ID:</span> <span id="modal-order-id">-</span></p>
+                    <p><span class="font-medium">Order Date:</span> <span id="modal-order-date">-</span></p>
+                    <p><span class="font-medium">Expected Delivery:</span> <span id="modal-delivery-date">-</span></p>
+                    <div class="flex items-center"><span class="font-medium mr-2">Status:</span>
+                        <select id="modal-order-status" class="px-2 py-1 border rounded text-sm">
                             <option value="new">New</option>
                             <option value="processing">Processing</option>
                             <option value="shipped">Shipped</option>
                             <option value="delivered">Delivered</option>
                             <option value="cancelled">Cancelled</option>
                         </select>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- Payment -->
-                        <select id="payment-filter"
-                            class="w-full px-2 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                            <option value="">Payment</option>
+        <div class="mb-6">
+            <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-boxes mr-2 text-orange-500"></i> Ordered Items</h4>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+                    </tr>
+                    </thead>
+                    <tbody id="modal-items-body"></tbody>
+                    <tfoot>
+                    <tr class="bg-gray-50">
+                        <td colspan="3" class="px-4 py-2 text-right font-medium">Total:</td>
+                        <td class="px-4 py-2 font-medium" id="modal-total-amount">₹0</td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-credit-card mr-2 text-orange-500"></i> Payment Details</h4>
+                <div class="space-y-2 text-sm">
+                    <p><span class="font-medium">Method:</span> <span id="modal-payment-method">-</span></p>
+                    <p><span class="font-medium">Txn ID:</span> <span id="modal-transaction-id">-</span></p>
+                    <div class="flex items-center"><span class="font-medium mr-2">Status:</span>
+                        <select id="modal-payment-status" class="px-2 py-1 border rounded text-sm">
                             <option value="paid">Paid</option>
                             <option value="pending">Pending</option>
                             <option value="failed">Failed</option>
                             <option value="refunded">Refunded</option>
                         </select>
-
-                        <!-- Date From -->
-                        <input type="date" id="date-from"
-                            class="w-full px-2 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-
-                        <!-- Date To -->
-                        <input type="date" id="date-to"
-                            class="w-full px-2 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-
-                        <!-- Buttons -->
-                        <div class="flex gap-2 justify-center">
-                            <button id="filter-btn"
-                                class="px-3 py-2 bg-orange-500 text-white rounded-md text-sm hover:bg-orange-600 flex items-center">
-                                <i class="fas fa-filter mr-1"></i> Filter
-                            </button>
-                            <button id="reset-filters"
-                                class="px-3 py-2 bg-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-400 flex items-center">
-                                <i class="fas fa-undo mr-1"></i> Reset
-                            </button>
-                        </div>
                     </div>
-                </div>
-
-                <!-- Table -->
-                <div class="bg-white rounded-lg shadow-md overflow-hidden animate-fadeIn">
-                    <div class="table-container">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50 sticky top-0 z-10">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                        <input type="checkbox" id="select-all" class="rounded text-orange-500">
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody id="orders-table-body" class="bg-white divide-y divide-gray-200"></tbody>
-                        </table>
-                    </div>
-                    <div
-                        class="bg-white px-4 py-3 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
-                        <p class="text-sm text-gray-700 mb-2 sm:mb-0">
-                            Showing <span id="pagination-start">0</span> to <span id="pagination-end">0</span> of <span
-                                id="pagination-total">0</span> results
-                        </p>
-                        <div class="flex space-x-2">
-                            <button id="prev-page"
-                                class="px-4 py-2 border rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                                disabled>Previous</button>
-                            <button id="next-page"
-                                class="px-4 py-2 border rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                                disabled>Next</button>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- Order Details Modal -->
-    <div id="order-details-modal" class="modal">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-orange-600">Order Details</h3>
-                <button id="close-modal" class="text-gray-500 hover:text-gray-700"><i
-                        class="fas fa-times text-xl"></i></button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center"><i
-                            class="fas fa-user mr-2 text-orange-500"></i> Customer Information</h4>
-                    <div class="space-y-2 text-sm">
-                        <p><span class="font-medium">Name:</span> <span id="customer-name">-</span></p>
-                        <p><span class="font-medium">Email:</span> <span id="customer-email">-</span></p>
-                        <p><span class="font-medium">Phone:</span> <span id="customer-phone">-</span></p>
-                        <p><span class="font-medium">Address:</span> <span id="customer-address">-</span></p>
-                        <p><span class="font-medium">City/State/Pin:</span> <span id="customer-location">-</span></p>
-                    </div>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center"><i
-                            class="fas fa-shopping-bag mr-2 text-orange-500"></i> Order Information</h4>
-                    <div class="space-y-2 text-sm">
-                        <p><span class="font-medium">Order ID:</span> <span id="modal-order-id">-</span></p>
-                        <p><span class="font-medium">Order Date:</span> <span id="modal-order-date">-</span></p>
-                        <p><span class="font-medium">Expected Delivery:</span> <span id="modal-delivery-date">-</span>
-                        </p>
-                        <div class="flex items-center"><span class="font-medium mr-2">Status:</span>
-                            <select id="modal-order-status" class="px-2 py-1 border rounded text-sm">
-                                <option value="new">New</option>
-                                <option value="processing">Processing</option>
-                                <option value="shipped">Shipped</option>
-                                <option value="delivered">Delivered</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="mb-6">
-                <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center"><i
-                        class="fas fa-boxes mr-2 text-orange-500"></i> Ordered Items</h4>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Subtotal
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody id="modal-items-body"></tbody>
-                        <tfoot>
-                            <tr class="bg-gray-50">
-                                <td colspan="3" class="px-4 py-2 text-right font-medium">Total:</td>
-                                <td class="px-4 py-2 font-medium" id="modal-total-amount">₹0</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center"><i
-                            class="fas fa-credit-card mr-2 text-orange-500"></i> Payment Details</h4>
-                    <div class="space-y-2 text-sm">
-                        <p><span class="font-medium">Method:</span> <span id="modal-payment-method">-</span></p>
-                        <p><span class="font-medium">Txn ID:</span> <span id="modal-transaction-id">-</span></p>
-                        <div class="flex items-center"><span class="font-medium mr-2">Status:</span>
-                            <select id="modal-payment-status" class="px-2 py-1 border rounded text-sm">
-                                <option value="paid">Paid</option>
-                                <option value="pending">Pending</option>
-                                <option value="failed">Failed</option>
-                                <option value="refunded">Refunded</option>
-                            </select>
-                        </div>
-                        <button id="download-invoice"
+                    <button id="download-invoice"
                             class="mt-2 px-3 py-1 bg-orange-500 text-white rounded text-sm hover:bg-orange-600 flex items-center">
-                            <i class="fas fa-file-invoice mr-1"></i> Download Invoice
-                        </button>
-                    </div>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center"><i
-                            class="fas fa-truck mr-2 text-orange-500"></i> Delivery Information</h4>
-                    <div class="space-y-2 text-sm">
-                        <p><span class="font-medium">Mode:</span> <span id="modal-delivery-mode">-</span></p>
-                        <p><span class="font-medium">Tracking ID:</span> <span id="modal-tracking-id">-</span></p>
-                        <p><span class="font-medium">Delivered:</span> <span id="modal-actual-delivery-date">-</span>
-                        </p>
-                    </div>
+                        <i class="fas fa-file-invoice mr-1"></i> Download Invoice
+                    </button>
                 </div>
             </div>
-            <div class="mb-6">
-                <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center"><i
-                        class="fas fa-sticky-note mr-2 text-orange-500"></i> Admin Notes</h4>
-                <textarea id="admin-notes" rows="3"
-                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    placeholder="Add internal notes..."></textarea>
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button id="save-changes" class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Save
-                    Changes</button>
-                <button id="close-modal-btn"
-                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">Close</button>
+
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-truck mr-2 text-orange-500"></i> Delivery Information</h4>
+                <div class="space-y-2 text-sm">
+                    <p><span class="font-medium">Mode:</span> <span id="modal-delivery-mode">-</span></p>
+                    <p><span class="font-medium">Tracking ID:</span> <span id="modal-tracking-id">-</span></p>
+                    <p><span class="font-medium">Delivered:</span> <span id="modal-actual-delivery-date">-</span></p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Invoice Modal (Hidden) -->
-    <div id="invoice-modal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
-            <div class="flex justify-between items-center mb-4">
-                <div class="bg-orange-600 p-4 rounded-t-lg">
-                    <h3 class="text-xl font-bold text-white">Invoice Preview</h3>
-                </div>
-                <button id="close-invoice-modal" class="text-gray-500 hover:text-gray-700"><i
-                        class="fas fa-times text-xl"></i></button>
-            </div>
-            <!-- NEW: Added scrollable container for invoice -->
-            <div class="invoice-scroll-container">
-                <div id="invoice-content" class="invoice-container">
-                    <!-- Invoice content will be generated here -->
-                </div>
-            </div>
-            <div class="flex justify-end space-x-3 mt-4">
-                <button id="print-invoice" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                    <i class="fas fa-print mr-2"></i> Print
-                </button>
-                <button id="download-pdf" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
-                    <i class="fas fa-download mr-2"></i> Download PDF
-                </button>
-                <button id="close-invoice"
-                    class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition">
-                    Close
-                </button>
-            </div>
+        <div class="mb-6">
+            <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-sticky-note mr-2 text-orange-500"></i> Admin Notes</h4>
+            <textarea id="admin-notes" rows="3"
+                      class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="Add internal notes..."></textarea>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+            <button id="save-changes" class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Save Changes</button>
+            <button id="close-modal-btn" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">Close</button>
         </div>
     </div>
+</div>
 
-    <!-- JavaScript Files -->
-    <script src="../assets/js/profile-sidebar.js"></script>
-    <script src="../assets/js/orders.js"></script>
+<!-- ==================== INVOICE MODAL ==================== -->
+<div id="invoice-modal" class="modal">
+    <div class="modal-content" style="max-width:800px;">
+        <div class="flex justify-between items-center mb-4">
+            <div class="bg-orange-600 p-4 rounded-t-lg">
+                <h3 class="text-xl font-bold text-white">Invoice Preview</h3>
+            </div>
+            <button id="close-invoice-modal" class="text-gray-500 hover:text-gray-700"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <div class="invoice-scroll-container">
+            <div id="invoice-content" class="invoice-container"></div>
+        </div>
+        <div class="flex justify-end space-x-3 mt-4">
+            <button id="print-invoice" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                <i class="fas fa-print mr-2"></i> Print
+            </button>
+            <button id="download-pdf" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                <i class="fas fa-download mr-2"></i> Download PDF
+            </button>
+            <button id="close-invoice" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script src="../assets/js/profile-sidebar.js"></script>
+<script src="../assets/js/orders.js"></script>
+<!-- Inline Script (Sidebar, Profile, Logout) -->
     <script>
-        // === PROFILE SYNC FUNCTION ===
+        // Profile Update
         function updateHeaderProfile() {
-            const profile = JSON.parse(localStorage.getItem('adminProfile')) || {
-                name: "Admin User", email: "admin@kunash.com", role: "System Administrator", photo: ""
-            };
+            const profile = JSON.parse(localStorage.getItem('adminProfile')) || { name: "Admin User", email: "admin@kunash.com", photo: "" };
+            const avatar = document.querySelector('header .w-10.h-10.bg-orange-500');
+            const nameEl = document.querySelector('header .text-right p.font-medium');
+            const emailEl = document.querySelector('header .text-right p.text-xs');
+            const ddName = document.querySelector('#profile-dropdown p.font-semibold');
+            const ddEmail = document.querySelector('#profile-dropdown p.text-xs');
 
-            // === SELECT ELEMENTS ===
-            const avatarContainer = document.querySelector('#profile-dropdown-btn + .relative')?.querySelector('.w-10') ||
-                document.querySelector('header .w-10.h-10.bg-orange-500');
-
-            const welcomeNameEl = document.querySelector('header .text-right p.font-medium');
-            const welcomeEmailEl = document.querySelector('header .text-right p.text-xs');
-            const dropdownName = document.querySelector('#profile-dropdown p.font-semibold');
-            const dropdownEmail = document.querySelector('#profile-dropdown p.text-xs');
-
-            if (!avatarContainer) return;
-
-            // === CLEAR PREVIOUS CONTENT ===
-            let img = avatarContainer.querySelector('img');
-            let letter = avatarContainer.querySelector('span');
-
-            // === UPDATE AVATAR ===
+            if (!avatar) return;
+            let img = avatar.querySelector('img'), letter = avatar.querySelector('span');
             if (profile.photo) {
-                if (!img) {
-                    img = document.createElement('img');
-                    img.className = 'w-full h-full rounded-full object-cover';
-                    img.alt = 'Profile';
-                    avatarContainer.innerHTML = '';
-                    avatarContainer.appendChild(img);
-                }
+                if (!img) { img = document.createElement('img'); img.className = 'w-full h-full rounded-full object-cover'; avatar.innerHTML = ''; avatar.appendChild(img); }
                 img.src = profile.photo;
             } else {
-                if (!letter) {
-                    letter = document.createElement('span');
-                    letter.className = 'text-white font-bold text-lg';
-                    avatarContainer.innerHTML = '';
-                    avatarContainer.appendChild(letter);
-                }
+                if (!letter) { letter = document.createElement('span'); letter.className = 'text-white font-bold text-lg'; avatar.innerHTML = ''; avatar.appendChild(letter); }
                 letter.textContent = profile.name.charAt(0).toUpperCase();
             }
-
-            // === UPDATE TEXT ===
-            if (welcomeNameEl) welcomeNameEl.textContent = profile.name;
-            if (welcomeEmailEl) welcomeEmailEl.textContent = profile.email;
-            if (dropdownName) dropdownName.textContent = profile.name;
-            if (dropdownEmail) dropdownEmail.textContent = profile.email;
+            if (nameEl) nameEl.textContent = profile.name;
+            if (emailEl) emailEl.textContent = profile.email;
+            if (ddName) ddName.textContent = profile.name;
+            if (ddEmail) ddEmail.textContent = profile.email;
         }
 
-        // === INITIAL LOAD ===
         document.addEventListener('DOMContentLoaded', () => {
             updateHeaderProfile();
-
-            // Re-attach dropdown toggle
-            const dropdownBtn = document.getElementById('profile-dropdown-btn');
-            const dropdown = document.getElementById('profile-dropdown');
-            if (dropdownBtn && dropdown) {
-                dropdownBtn.onclick = () => dropdown.classList.toggle('hidden');
-            }
+            const ddBtn = document.getElementById('profile-dropdown-btn');
+            const dd = document.getElementById('profile-dropdown');
+            if (ddBtn && dd) ddBtn.onclick = () => dd.classList.toggle('hidden');
         });
 
-        // === LISTEN FOR UPDATES (Cross-tab & Same-tab) ===
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'adminProfile') updateHeaderProfile();
-        });
+        window.addEventListener('storage', e => { if (e.key === 'adminProfile') updateHeaderProfile(); });
         window.addEventListener('profileUpdated', updateHeaderProfile);
 
-        // === REST OF YOUR ORIGINAL SCRIPTS (Sidebar, etc.) ===
+        // Sidebar Toggle
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.querySelector('.main-content');
         const toggleBtn = document.getElementById('toggle-btn');
         const toggleIcon = toggleBtn.querySelector('.material-icons');
         const sidebarToggle = document.getElementById('sidebar-toggle');
-        let isCollapsed = false;
+        let collapsed = false;
 
         toggleBtn.addEventListener('click', () => {
-            isCollapsed = !isCollapsed;
-            if (isCollapsed) {
+            collapsed = !collapsed;
+            if (collapsed) {
                 sidebar.classList.add('sidebar-collapsed');
-                mainContent.classList.remove('ml-64');
-                mainContent.classList.add('ml-20');
+                mainContent.classList.remove('ml-64'); mainContent.classList.add('ml-20');
                 toggleIcon.textContent = 'chevron_right';
             } else {
                 sidebar.classList.remove('sidebar-collapsed');
-                mainContent.classList.remove('ml-20');
-                mainContent.classList.add('ml-64');
+                mainContent.classList.remove('ml-20'); mainContent.classList.add('ml-64');
                 toggleIcon.textContent = 'chevron_left';
             }
         });
 
         if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
-            });
+            sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('-translate-x-full'));
         }
 
-        document.addEventListener('click', (e) => {
+        document.addEventListener('click', e => {
             if (window.innerWidth < 1024) {
-                const isClickInside = sidebar.contains(e.target) || (sidebarToggle && sidebarToggle.contains(e.target));
-                if (!isClickInside && !sidebar.classList.contains('-translate-x-full')) {
+                const inside = sidebar.contains(e.target) || (sidebarToggle && sidebarToggle.contains(e.target));
+                if (!inside && !sidebar.classList.contains('-translate-x-full')) {
                     sidebar.classList.add('-translate-x-full');
                 }
             }
@@ -706,23 +485,21 @@
         window.addEventListener('resize', () => {
             if (window.innerWidth >= 1024) {
                 sidebar.classList.remove('-translate-x-full');
-                if (!isCollapsed) mainContent.classList.add('ml-64');
+                if (!collapsed) mainContent.classList.add('ml-64');
             } else {
                 mainContent.classList.remove('ml-64', 'ml-20');
             }
         });
 
-        // Close dropdown outside click
-        document.addEventListener('click', function (e) {
-            const dropdown = document.getElementById('profile-dropdown');
+        // Close dropdown on outside click
+        document.addEventListener('click', e => {
+            const dd = document.getElementById('profile-dropdown');
             const btn = document.getElementById('profile-dropdown-btn');
-            if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.add('hidden');
-            }
+            if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) dd.classList.add('hidden');
         });
 
         // Logout
-        document.getElementById('logout-btn')?.addEventListener('click', function () {
+        document.getElementById('logout-btn')?.addEventListener('click', () => {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('adminAuth');
                 sessionStorage.clear();
@@ -731,5 +508,4 @@
         });
     </script>
 </body>
-
 </html>
