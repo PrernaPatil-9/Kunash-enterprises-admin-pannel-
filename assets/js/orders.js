@@ -1,470 +1,803 @@
-/* -------------------------------------------------------------
-   Order Management – All Logic (Updated with PDF Invoice Generation)
-   -------------------------------------------------------------- */
-let orders = JSON.parse(localStorage.getItem('orders') || '[]');
-let customers = JSON.parse(localStorage.getItem('customers') || '[]');
-let products = JSON.parse(localStorage.getItem('products') || '[]');
-
-/* ---- Sample Data (Only if empty) ---- */
-if (orders.length === 0) {
-    orders = [
-        { id: 'ORD2024001', customerId: 'CUST001', date: '2024-10-15', items: [{ productId: 'PROD001', quantity: 2, price: 499 }, { productId: 'PROD002', quantity: 1, price: 299 }], total: 1297, paymentStatus: 'paid', orderStatus: 'processing', paymentMethod: 'UPI', transactionId: 'TXN001234', deliveryType: 'home', trackingId: 'TRK789012', expectedDelivery: '2024-10-20', adminNotes: 'Customer requested early delivery' },
-        { id: 'ORD2024002', customerId: 'CUST002', date: '2024-10-16', items: [{ productId: 'PROD003', quantity: 1, price: 899 }], total: 899, paymentStatus: 'pending', orderStatus: 'new', paymentMethod: 'COD', transactionId: '', deliveryType: 'home', trackingId: '', expectedDelivery: '2024-10-22', adminNotes: '' },
-        { id: 'ORD2024003', customerId: 'CUST003', date: '2024-10-10', items: [{ productId: 'PROD001', quantity: 1, price: 499 }, { productId: 'PROD004', quantity: 3, price: 199 }], total: 1096, paymentStatus: 'paid', orderStatus: 'delivered', paymentMethod: 'Card', transactionId: 'TXN567890', deliveryType: 'home', trackingId: 'TRK345678', expectedDelivery: '2024-10-15', actualDelivery: '2024-10-14', adminNotes: 'Delivered early' },
-        { id: 'ORD2024004', customerId: 'CUST004', date: '2024-10-05', items: [{ productId: 'PROD005', quantity: 1, price: 1299 }], total: 1299, paymentStatus: 'refunded', orderStatus: 'cancelled', paymentMethod: 'UPI', transactionId: 'TXN987654', deliveryType: 'home', trackingId: '', expectedDelivery: '2024-10-12', adminNotes: 'Cancelled, refund processed' },
-        { id: 'ORD2024005', customerId: 'CUST005', date: '2024-10-18', items: [{ productId: 'PROD002', quantity: 2, price: 299 }, { productId: 'PROD006', quantity: 1, price: 599 }], total: 1197, paymentStatus: 'paid', orderStatus: 'shipped', paymentMethod: 'UPI', transactionId: 'TXN246810', deliveryType: 'home', trackingId: 'TRK135790', expectedDelivery: '2024-10-25', adminNotes: '' }
-    ];
-    localStorage.setItem('orders', JSON.stringify(orders));
-}
-
-if (customers.length === 0) {
-    customers = [
-        { id: 'CUST001', name: 'Rahul Sharma', email: 'rahul@example.com', phone: '9876543210', address: '123 Main St', city: 'Mumbai', state: 'MH', pincode: '400001' },
-        { id: 'CUST002', name: 'Priya Patel', email: 'priya@example.com', phone: '9876543211', address: '456 Park Ave', city: 'Delhi', state: 'DL', pincode: '110001' },
-        { id: 'CUST003', name: 'Amit Kumar', email: 'amit@example.com', phone: '9876543212', address: '789 MG Road', city: 'Bangalore', state: 'KA', pincode: '560001' },
-        { id: 'CUST004', name: 'Sneha Singh', email: 'sneha@example.com', phone: '9876543213', address: '321 Church St', city: 'Chennai', state: 'TN', pincode: '600001' },
-        { id: 'CUST005', name: 'Vikram Reddy', email: 'vikram@example.com', phone: '9876543214', address: '654 Brigade Rd', city: 'Hyderabad', state: 'TS', pincode: '500001' }
-    ];
-    localStorage.setItem('customers', JSON.stringify(customers));
-}
-
-if (products.length === 0) {
-    products = [
-        { id: 'PROD001', name: 'Wireless Earbuds', price: 499 },
-        { id: 'PROD002', name: 'Phone Case', price: 299 },
-        { id: 'PROD003', name: 'Smart Watch', price: 899 },
-        { id: 'PROD004', name: 'USB Cable', price: 199 },
-        { id: 'PROD005', name: 'Bluetooth Speaker', price: 1299 },
-        { id: 'PROD006', name: 'Power Bank', price: 599 }
-    ];
-    localStorage.setItem('products', JSON.stringify(products));
-}
-
-/* ---- DOM Elements ---- */
-const ordersTableBody = document.getElementById('orders-table-body');
-const modal = document.getElementById('order-details-modal');
-const invoiceModal = document.getElementById('invoice-modal');
-const searchInput = document.getElementById('search-input');
-const statusFilter = document.getElementById('status-filter');
-const paymentFilter = document.getElementById('payment-filter');
-const dateFrom = document.getElementById('date-from');
-const dateTo = document.getElementById('date-to');
-const filterBtn = document.getElementById('filter-btn');
-const resetFilters = document.getElementById('reset-filters');
-const selectAll = document.getElementById('select-all');
-const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
-const bulkCount = document.getElementById('bulk-count');
-const prevPage = document.getElementById('prev-page');
-const nextPage = document.getElementById('next-page');
-const paginationStart = document.getElementById('pagination-start');
-const paginationEnd = document.getElementById('pagination-end');
-const paginationTotal = document.getElementById('pagination-total');
-const downloadInvoiceBtn = document.getElementById('download-invoice');
-const printInvoiceBtn = document.getElementById('print-invoice');
-const downloadPdfBtn = document.getElementById('download-pdf');
-const closeInvoiceBtn = document.getElementById('close-invoice');
-const closeInvoiceModalBtn = document.getElementById('close-invoice-modal');
-
-/* ---- State ---- */
-let currentPage = 1;
-const itemsPerPage = 10;
-let filteredOrders = [...orders];
-let selectedOrders = new Set();
-let currentInvoiceOrder = null;
-
-/* ---- Init ---- */
-document.addEventListener('DOMContentLoaded', () => {
-    updateStats();
-    applyFilters();
-    setupEvents();
-});
-
-/* ---- Core Functions ---- */
-function updateStats() {
-    const total = orders.length;
-    const pending = orders.filter(o => ['new', 'processing'].includes(o.orderStatus)).length;
-    const shipped = orders.filter(o => o.orderStatus === 'shipped').length;
-    const revenue = orders
-        .filter(o => new Date(o.date).getMonth() === new Date().getMonth() && o.paymentStatus === 'paid')
-        .reduce((sum, o) => sum + o.total, 0);
-    
-    document.getElementById('total-orders').textContent = total;
-    document.getElementById('pending-orders').textContent = pending;
-    document.getElementById('shipped-orders').textContent = shipped;
-    document.getElementById('monthly-revenue').textContent = `₹${revenue.toLocaleString()}`;
-}
-
-function renderTable() {
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = Math.min(start + itemsPerPage, filteredOrders.length);
-    const page = filteredOrders.slice(start, end);
-    
-    ordersTableBody.innerHTML = page.length === 0
-        ? `<tr><td colspan="9" class="px-6 py-4 text-center text-gray-500">No orders found</td></tr>`
-        : '';
-    
-    page.forEach(order => {
-        const cust = customers.find(c => c.id === order.customerId) || {};
-        const row = document.createElement('tr');
-        row.className = 'order-row';
-        row.innerHTML = `
-            <td class="px-6 py-4"><input type="checkbox" class="order-checkbox rounded text-orange-500" data-order-id="${order.id}"></td>
-            <td class="px-6 py-4 text-sm font-medium text-gray-900">${order.id}</td>
-            <td class="px-6 py-4"><div class="text-sm font-medium text-gray-900">${cust.name || 'N/A'}</div><div class="text-xs text-gray-500">${cust.email || ''}</div></td>
-            <td class="px-6 py-4 text-sm text-gray-900">${formatDate(order.date)}</td>
-            <td class="px-6 py-4 text-sm text-gray-900">${order.items.length} item(s)</td>
-            <td class="px-6 py-4 text-sm font-medium text-gray-900">₹${order.total}</td>
-            <td class="px-6 py-4"><span class="status-badge payment-status-${order.paymentStatus}">${formatStatus(order.paymentStatus)}</span></td>
-            <td class="px-6 py-4"><span class="status-badge status-${order.orderStatus}">${formatStatus(order.orderStatus)}</span></td>
-            <td class="px-6 py-4 text-sm space-x-1">
-                <button class="text-orange-600 hover:text-orange-800 edit-order" data-order-id="${order.id}" title="Edit"><i class="fas fa-edit"></i></button>
-                <button class="text-blue-600 hover:text-blue-800 invoice-order" data-order-id="${order.id}" title="Invoice"><i class="fas fa-file-invoice"></i></button>
-                <button class="text-red-600 hover:text-red-800 delete-order" data-order-id="${order.id}" title="Delete"><i class="fas fa-trash"></i></button>
-            </td>
-        `;
-        ordersTableBody.appendChild(row);
-    });
-    
-    paginationStart.textContent = filteredOrders.length ? start + 1 : 0;
-    paginationEnd.textContent = end;
-    paginationTotal.textContent = filteredOrders.length;
-    prevPage.disabled = currentPage === 1;
-    nextPage.disabled = end >= filteredOrders.length;
-    updateBulkDeleteButton();
-}
-
-function applyFilters() {
-    const term = searchInput.value.toLowerCase();
-    const status = statusFilter.value;
-    const pay = paymentFilter.value;
-    const from = dateFrom.value;
-    const to = dateTo.value;
-    
-    filteredOrders = orders.filter(o => {
-        const cust = customers.find(c => c.id === o.customerId) || {};
-        const matchesSearch = !term ||
-            o.id.toLowerCase().includes(term) ||
-            (cust.name && cust.name.toLowerCase().includes(term)) ||
-            (cust.email && cust.email.toLowerCase().includes(term));
-        const matchesStatus = !status || o.orderStatus === status;
-        const matchesPay = !pay || o.paymentStatus === pay;
-        const afterFrom = !from || o.date >= from;
-        const beforeTo = !to || o.date <= to;
+// Order Management System
+class OrderManager {
+    constructor() {
+        this.orders = [];
+        this.filteredOrders = [];
+        this.currentPage = 1;
+        this.itemsPerPage = 10;
+        this.selectedOrders = new Set();
         
-        return matchesSearch && matchesStatus && matchesPay && afterFrom && beforeTo;
-    });
-    
-    currentPage = 1;
-    renderTable();
-}
+        this.init();
+    }
 
-function resetAllFilters() {
-    searchInput.value = '';
-    statusFilter.value = '';
-    paymentFilter.value = '';
-    dateFrom.value = '';
-    dateTo.value = '';
-    applyFilters();
-}
+    init() {
+        this.loadOrders();
+        this.setupEventListeners();
+        this.renderOrders();
+        this.updateStats();
+    }
 
-/* ---- PDF Invoice Generation ---- */
-function generateInvoice(orderId) {
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-    
-    currentInvoiceOrder = order;
-    const customer = customers.find(c => c.id === order.customerId) || {};
-    
-    const invoiceDate = new Date().toLocaleDateString('en-IN');
-    const dueDate = new Date(new Date().setDate(new Date().getDate() + 15)).toLocaleDateString('en-IN');
-    
-    const invoiceHTML = `
-        <div class="invoice-header">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h1 class="text-3xl font-bold text-orange-600">KUNASH ENTERPRISES</h1>
-                    <p class="text-gray-600">123 Business Avenue, Mumbai, Maharashtra - 400001</p>
-                    <p class="text-gray-600">Phone: +91 98765 43210 | Email: info@kunash.com</p>
-                    <p class="text-gray-600">GSTIN: 27ABCDE1234F1Z5</p>
-                </div>
-                <div class="text-right">
-                    <h2 class="text-2xl font-bold text-gray-800">INVOICE</h2>
-                    <p class="text-gray-600">Invoice #: ${order.id}</p>
-                    <p class="text-gray-600">Date: ${invoiceDate}</p>
-                    <p class="text-gray-600">Due Date: ${dueDate}</p>
-                </div>
-            </div>
-        </div>
+    loadOrders() {
+        // Try to load from localStorage, otherwise use sample data
+        const savedOrders = localStorage.getItem('orders');
         
-        <div class="grid grid-cols-2 gap-8 my-8">
-            <div>
-                <h3 class="text-lg font-semibold text-gray-700 mb-2">Bill To:</h3>
-                <p class="font-medium">${customer.name || 'N/A'}</p>
-                <p>${customer.address || ''}</p>
-                <p>${customer.city || ''}, ${customer.state || ''} - ${customer.pincode || ''}</p>
-                <p>Phone: ${customer.phone || 'N/A'}</p>
-                <p>Email: ${customer.email || 'N/A'}</p>
-            </div>
-            <div>
-                <h3 class="text-lg font-semibold text-gray-700 mb-2">Order Details:</h3>
-                <p><strong>Order ID:</strong> ${order.id}</p>
-                <p><strong>Order Date:</strong> ${formatDate(order.date)}</p>
-                <p><strong>Payment Method:</strong> ${order.paymentMethod || 'N/A'}</p>
-                <p><strong>Payment Status:</strong> <span class="font-semibold ${order.paymentStatus === 'paid' ? 'text-green-600' : 'text-orange-600'}">${formatStatus(order.paymentStatus)}</span></p>
-            </div>
-        </div>
+        if (savedOrders) {
+            this.orders = JSON.parse(savedOrders);
+        } else {
+            // Generate sample orders if none exist
+            this.generateSampleOrders();
+            this.saveOrders();
+        }
         
-        <table class="invoice-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Description</th>
-                    <th>Quantity</th>
-                    <th>Unit Price</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${order.items.map((item, index) => {
-                    const product = products.find(p => p.id === item.productId) || {};
-                    const subtotal = item.quantity * item.price;
-                    return `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${product.name || 'Unknown Product'}</td>
-                            <td>${item.quantity}</td>
-                            <td>₹${item.price.toLocaleString()}</td>
-                            <td>₹${subtotal.toLocaleString()}</td>
-                        </tr>
-                    `;
-                }).join('')}
-            </tbody>
-        </table>
+        this.filteredOrders = [...this.orders];
+    }
+
+    generateSampleOrders() {
+        const customers = [
+            { name: "Rajesh Kumar", email: "rajesh@example.com", phone: "9876543210", address: "123 MG Road", city: "Bangalore", state: "Karnataka", pincode: "560001" },
+            { name: "Priya Sharma", email: "priya@example.com", phone: "9876543211", address: "456 Brigade Road", city: "Bangalore", state: "Karnataka", pincode: "560002" },
+            { name: "Amit Patel", email: "amit@example.com", phone: "9876543212", address: "789 Indiranagar", city: "Bangalore", state: "Karnataka", pincode: "560038" },
+            { name: "Sneha Reddy", email: "sneha@example.com", phone: "9876543213", address: "321 Koramangala", city: "Bangalore", state: "Karnataka", pincode: "560034" },
+            { name: "Vikram Singh", email: "vikram@example.com", phone: "9876543214", address: "654 Whitefield", city: "Bangalore", state: "Karnataka", pincode: "560066" }
+        ];
+
+        const products = [
+            { name: "Premium Cashew Nuts 500g", price: 850 },
+            { name: "Almonds 500g", price: 650 },
+            { name: "Pistachios 250g", price: 550 },
+            { name: "Walnuts 250g", price: 450 },
+            { name: "Dry Fruits Mix 1kg", price: 1200 }
+        ];
+
+        const statuses = ['new', 'processing', 'shipped', 'delivered', 'cancelled'];
+        const paymentStatuses = ['paid', 'pending', 'failed', 'refunded'];
+
+        this.orders = [];
+
+        for (let i = 1; i <= 50; i++) {
+            const customer = customers[Math.floor(Math.random() * customers.length)];
+            const itemCount = Math.floor(Math.random() * 3) + 1;
+            const items = [];
+            let total = 0;
+
+            for (let j = 0; j < itemCount; j++) {
+                const product = products[Math.floor(Math.random() * products.length)];
+                const quantity = Math.floor(Math.random() * 3) + 1;
+                const subtotal = product.price * quantity;
+                total += subtotal;
+
+                items.push({
+                    product: product.name,
+                    quantity: quantity,
+                    price: product.price,
+                    subtotal: subtotal
+                });
+            }
+
+            const orderDate = new Date();
+            orderDate.setDate(orderDate.getDate() - Math.floor(Math.random() * 30));
+            
+            const deliveryDate = new Date(orderDate);
+            deliveryDate.setDate(deliveryDate.getDate() + Math.floor(Math.random() * 7) + 3);
+            
+            const actualDeliveryDate = Math.random() > 0.7 ? 
+                new Date(deliveryDate.getTime() - Math.floor(Math.random() * 3) * 24 * 60 * 60 * 1000) : null;
+
+            const status = statuses[Math.floor(Math.random() * statuses.length)];
+            const paymentStatus = paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)];
+
+            this.orders.push({
+                id: `ORD${String(i).padStart(4, '0')}`,
+                customer: customer,
+                date: orderDate.toISOString().split('T')[0],
+                items: items,
+                total: total,
+                status: status,
+                paymentStatus: paymentStatus,
+                paymentMethod: Math.random() > 0.5 ? 'Credit Card' : 'UPI',
+                transactionId: `TXN${String(i).padStart(6, '0')}`,
+                deliveryMode: 'Standard',
+                trackingId: status === 'shipped' || status === 'delivered' ? `TRK${String(i).padStart(8, '0')}` : null,
+                expectedDelivery: deliveryDate.toISOString().split('T')[0],
+                actualDelivery: actualDeliveryDate ? actualDeliveryDate.toISOString().split('T')[0] : null,
+                adminNotes: ''
+            });
+        }
+    }
+
+    saveOrders() {
+        localStorage.setItem('orders', JSON.stringify(this.orders));
+    }
+
+    setupEventListeners() {
+        // Pagination
+        document.getElementById('prev-page').addEventListener('click', () => {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.renderOrders();
+            }
+        });
+
+        document.getElementById('next-page').addEventListener('click', () => {
+            const totalPages = Math.ceil(this.filteredOrders.length / this.itemsPerPage);
+            if (this.currentPage < totalPages) {
+                this.currentPage++;
+                this.renderOrders();
+            }
+        });
+
+        // Search and filters
+        document.getElementById('search-input').addEventListener('input', () => {
+            this.applyFilters();
+        });
+
+        document.getElementById('status-filter').addEventListener('change', () => {
+            this.applyFilters();
+        });
+
+        document.getElementById('payment-filter').addEventListener('change', () => {
+            this.applyFilters();
+        });
+
+        document.getElementById('date-from').addEventListener('change', () => {
+            this.applyFilters();
+        });
+
+        document.getElementById('date-to').addEventListener('change', () => {
+            this.applyFilters();
+        });
+
+        document.getElementById('filter-btn').addEventListener('click', () => {
+            this.applyFilters();
+        });
+
+        document.getElementById('reset-filters').addEventListener('click', () => {
+            document.getElementById('search-input').value = '';
+            document.getElementById('status-filter').value = '';
+            document.getElementById('payment-filter').value = '';
+            document.getElementById('date-from').value = '';
+            document.getElementById('date-to').value = '';
+            this.applyFilters();
+        });
+
+        // Bulk actions
+        document.getElementById('select-all').addEventListener('change', (e) => {
+            const checkboxes = document.querySelectorAll('.order-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = e.target.checked;
+                this.toggleOrderSelection(checkbox.dataset.id, checkbox.checked);
+            });
+            this.updateBulkActions();
+        });
+
+        document.getElementById('bulk-delete-btn').addEventListener('click', () => {
+            this.bulkDeleteOrders();
+        });
+
+        // Modal events
+        document.getElementById('close-modal').addEventListener('click', () => {
+            this.closeModal();
+        });
+
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            this.closeModal();
+        });
+
+        document.getElementById('save-changes').addEventListener('click', () => {
+            this.saveOrderChanges();
+        });
+
+        document.getElementById('download-invoice').addEventListener('click', () => {
+            this.generateInvoice();
+        });
+
+        // Invoice modal events
+        document.getElementById('close-invoice-modal').addEventListener('click', () => {
+            this.closeInvoiceModal();
+        });
+
+        document.getElementById('close-invoice').addEventListener('click', () => {
+            this.closeInvoiceModal();
+        });
+
+        document.getElementById('print-invoice').addEventListener('click', () => {
+            this.printInvoice();
+        });
+
+        document.getElementById('download-pdf').addEventListener('click', () => {
+            this.downloadInvoicePDF();
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            const orderModal = document.getElementById('order-details-modal');
+            const invoiceModal = document.getElementById('invoice-modal');
+            
+            if (e.target === orderModal) {
+                this.closeModal();
+            }
+            
+            if (e.target === invoiceModal) {
+                this.closeInvoiceModal();
+            }
+        });
+    }
+
+    applyFilters() {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        const statusFilter = document.getElementById('status-filter').value;
+        const paymentFilter = document.getElementById('payment-filter').value;
+        const dateFrom = document.getElementById('date-from').value;
+        const dateTo = document.getElementById('date-to').value;
+
+        this.filteredOrders = this.orders.filter(order => {
+            const matchesSearch = 
+                order.id.toLowerCase().includes(searchTerm) ||
+                order.customer.name.toLowerCase().includes(searchTerm) ||
+                order.customer.email.toLowerCase().includes(searchTerm);
+            
+            const matchesStatus = !statusFilter || order.status === statusFilter;
+            const matchesPayment = !paymentFilter || order.paymentStatus === paymentFilter;
+            
+            let matchesDate = true;
+            if (dateFrom && order.date < dateFrom) {
+                matchesDate = false;
+            }
+            if (dateTo && order.date > dateTo) {
+                matchesDate = false;
+            }
+            
+            return matchesSearch && matchesStatus && matchesPayment && matchesDate;
+        });
+
+        this.currentPage = 1;
+        this.renderOrders();
+        this.updateStats();
+    }
+
+    renderOrders() {
+        const tableBody = document.getElementById('orders-table-body');
+        tableBody.innerHTML = '';
+
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = Math.min(startIndex + this.itemsPerPage, this.filteredOrders.length);
+        const currentOrders = this.filteredOrders.slice(startIndex, endIndex);
+
+        currentOrders.forEach(order => {
+            const row = document.createElement('tr');
+            row.className = 'order-row';
+            
+            // Format date
+            const orderDate = new Date(order.date);
+            const formattedDate = orderDate.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+
+            // Status badge
+            const statusClass = `status-${order.status}`;
+            const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+            
+            // Payment status badge
+            const paymentClass = `payment-status-${order.paymentStatus}`;
+            const paymentText = order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1);
+
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <input type="checkbox" class="order-checkbox rounded text-orange-500" data-id="${order.id}">
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.id}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">${order.customer.name}</div>
+                    <div class="text-sm text-gray-500">${order.customer.email}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formattedDate}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.items.length} items</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹${order.total}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="status-badge ${paymentClass}">${paymentText}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button class="text-blue-600 hover:text-blue-900 invoice-order mr-3" data-id="${order.id}">
+                        <i class="fas fa-file-invoice"></i> 
+                    </button>
+                    <button class="text-red-600 hover:text-red-900 delete-order" data-id="${order.id}">
+                        <i class="fas fa-trash"></i> 
+                    </button>
+                </td>
+            `;
+
+            tableBody.appendChild(row);
+        });
+
+        // Add event listeners to invoice and delete buttons
+        document.querySelectorAll('.invoice-order').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const orderId = e.target.closest('button').dataset.id;
+                this.generateInvoiceFromTable(orderId);
+            });
+        });
+
+        document.querySelectorAll('.delete-order').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const orderId = e.target.closest('button').dataset.id;
+                this.deleteOrder(orderId);
+            });
+        });
+
+        // Add event listeners to checkboxes
+        document.querySelectorAll('.order-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                this.toggleOrderSelection(e.target.dataset.id, e.target.checked);
+                this.updateBulkActions();
+            });
+        });
+
+        this.updatePagination();
+        this.updateBulkActions();
+    }
+
+    updatePagination() {
+        const totalOrders = this.filteredOrders.length;
+        const totalPages = Math.ceil(totalOrders / this.itemsPerPage);
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage + 1;
+        const endIndex = Math.min(this.currentPage * this.itemsPerPage, totalOrders);
+
+        document.getElementById('pagination-start').textContent = startIndex;
+        document.getElementById('pagination-end').textContent = endIndex;
+        document.getElementById('pagination-total').textContent = totalOrders;
+
+        document.getElementById('prev-page').disabled = this.currentPage === 1;
+        document.getElementById('next-page').disabled = this.currentPage === totalPages || totalPages === 0;
+    }
+
+    updateStats() {
+        const totalOrders = this.filteredOrders.length;
+        const pendingOrders = this.filteredOrders.filter(order => 
+            order.status === 'new' || order.status === 'processing').length;
+        const shippedOrders = this.filteredOrders.filter(order => order.status === 'shipped').length;
         
-        <table class="invoice-totals">
-            <tr>
-                <td>Subtotal:</td>
-                <td>₹${order.total.toLocaleString()}</td>
-            </tr>
-            <tr>
-                <td>Tax (18% GST):</td>
-                <td>₹${(order.total * 0.18).toLocaleString()}</td>
-            </tr>
-            <tr>
-                <td>Shipping:</td>
-                <td>₹${order.total > 1000 ? '0' : '99'}</td>
-            </tr>
-            <tr class="border-t-2 border-gray-800">
-                <td><strong>Total:</strong></td>
-                <td><strong>₹${(order.total + (order.total * 0.18) + (order.total > 1000 ? 0 : 99)).toLocaleString()}</strong></td>
-            </tr>
-        </table>
+        // Calculate monthly revenue (current month)
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        const monthlyRevenue = this.filteredOrders
+            .filter(order => {
+                const orderDate = new Date(order.date);
+                return orderDate.getMonth() === currentMonth && 
+                       orderDate.getFullYear() === currentYear &&
+                       order.paymentStatus === 'paid';
+            })
+            .reduce((sum, order) => sum + order.total, 0);
+
+        document.getElementById('total-orders').textContent = totalOrders;
+        document.getElementById('pending-orders').textContent = pendingOrders;
+        document.getElementById('shipped-orders').textContent = shippedOrders;
+        document.getElementById('monthly-revenue').textContent = `₹${monthlyRevenue}`;
+    }
+
+    toggleOrderSelection(orderId, isSelected) {
+        if (isSelected) {
+            this.selectedOrders.add(orderId);
+        } else {
+            this.selectedOrders.delete(orderId);
+        }
+    }
+
+    updateBulkActions() {
+        const bulkCount = document.getElementById('bulk-count');
+        const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+        const selectAll = document.getElementById('select-all');
+
+        bulkCount.textContent = this.selectedOrders.size;
+        bulkDeleteBtn.disabled = this.selectedOrders.size === 0;
+
+        // Update select all checkbox state
+        const checkboxes = document.querySelectorAll('.order-checkbox');
+        const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+        const someChecked = Array.from(checkboxes).some(cb => cb.checked);
         
-        <div class="mt-12 pt-8 border-t border-gray-300">
-            <div class="grid grid-cols-2 gap-8">
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Payment Instructions:</h3>
-                    <p class="text-sm">Please make payment within 15 days of invoice date.</p>
-                    <p class="text-sm">Bank: State Bank of India</p>
-                    <p class="text-sm">Account: Kunash Enterprises</p>
-                    <p class="text-sm">Account No: 123456789012</p>
-                    <p class="text-sm">IFSC: SBIN0000123</p>
-                </div>
-                <div class="text-right">
-                    <p class="mb-4">For Kunash Enterprises</p>
-                    <div class="mt-8">
-                        <p class="text-sm">Authorized Signature</p>
+        selectAll.checked = allChecked;
+        selectAll.indeterminate = someChecked && !allChecked;
+    }
+
+    generateInvoiceFromTable(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order) return;
+
+        const invoiceContent = document.getElementById('invoice-content');
+        
+        // Format dates
+        const orderDate = new Date(order.date);
+        const formattedOrderDate = orderDate.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+        
+        const deliveryDate = new Date(order.expectedDelivery);
+        const formattedDeliveryDate = deliveryDate.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        invoiceContent.innerHTML = `
+            <div class="invoice-header">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <img src="../assets/images/logoo bg.png" alt="Kunash Enterprises" class="invoice-logo">
+                        <h1 class="text-2xl font-bold text-orange-600">Kunash Enterprises</h1>
+                        <p class="text-gray-600">Premium Dry Fruits & Nuts</p>
+                        <p class="text-gray-600">Bangalore, Karnataka - 560001</p>
+                        <p class="text-gray-600">GSTIN: 29AAECK1234L1Z5</p>
+                    </div>
+                    <div class="text-right">
+                        <h2 class="text-3xl font-bold text-gray-800">INVOICE</h2>
+                        <p class="text-gray-600 mt-2">Invoice #: ${order.id}</p>
+                        <p class="text-gray-600">Date: ${formattedOrderDate}</p>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <div class="grid grid-cols-2 gap-8 mb-8">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Bill To:</h3>
+                    <p class="font-medium">${order.customer.name}</p>
+                    <p>${order.customer.address}</p>
+                    <p>${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}</p>
+                    <p>${order.customer.email}</p>
+                    <p>${order.customer.phone}</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Order Details:</h3>
+                    <p><span class="font-medium">Order ID:</span> ${order.id}</p>
+                    <p><span class="font-medium">Order Date:</span> ${formattedOrderDate}</p>
+                    <p><span class="font-medium">Expected Delivery:</span> ${formattedDeliveryDate}</p>
+                    <p><span class="font-medium">Payment Method:</span> ${order.paymentMethod}</p>
+                    <p><span class="font-medium">Status:</span> <span class="capitalize">${order.status}</span></p>
+                </div>
+            </div>
+
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${order.items.map(item => `
+                        <tr>
+                            <td>${item.product}</td>
+                            <td>${item.quantity}</td>
+                            <td>₹${item.price}</td>
+                            <td>₹${item.subtotal}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-right font-semibold">Subtotal:</td>
+                        <td class="font-semibold">₹${order.total}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-right font-semibold">Shipping:</td>
+                        <td class="font-semibold">₹0</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-right font-semibold">Total:</td>
+                        <td class="font-semibold text-lg">₹${order.total}</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="mt-8 text-center text-gray-600">
+                <p>Thank you for your business with Kunash Enterprises!</p>
+                <p class="mt-2">For any queries, contact us at support@kunash.com or call +91-9876543210</p>
+            </div>
+        `;
+
+        // Show invoice modal
+        document.getElementById('invoice-modal').style.display = 'flex';
+    }
+
+    viewOrderDetails(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order) return;
+
+        // Populate customer information
+        document.getElementById('customer-name').textContent = order.customer.name;
+        document.getElementById('customer-email').textContent = order.customer.email;
+        document.getElementById('customer-phone').textContent = order.customer.phone;
+        document.getElementById('customer-address').textContent = order.customer.address;
+        document.getElementById('customer-location').textContent = 
+            `${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}`;
+
+        // Populate order information
+        document.getElementById('modal-order-id').textContent = order.id;
         
-        <div class="mt-8 text-center text-gray-500 text-sm">
-            <p>Thank you for your business!</p>
-            <p>If you have any questions about this invoice, please contact</p>
-            <p>support@kunash.com or call +91 98765 43210</p>
-        </div>
-    `;
-    
-    document.getElementById('invoice-content').innerHTML = invoiceHTML;
-    invoiceModal.style.display = 'flex';
-}
+        const orderDate = new Date(order.date);
+        document.getElementById('modal-order-date').textContent = 
+            orderDate.toLocaleDateString('en-IN', { 
+                day: '2-digit', 
+                month: 'long', 
+                year: 'numeric' 
+            });
+            
+        const deliveryDate = new Date(order.expectedDelivery);
+        document.getElementById('modal-delivery-date').textContent = 
+            deliveryDate.toLocaleDateString('en-IN', { 
+                day: '2-digit', 
+                month: 'long', 
+                year: 'numeric' 
+            });
+            
+        document.getElementById('modal-order-status').value = order.status;
 
-function downloadPDF() {
-    const element = document.getElementById('invoice-content');
-    const options = {
-        margin: 10,
-        filename: `invoice_${currentInvoiceOrder.id}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    
-    html2pdf().set(options).from(element).save();
-}
-
-function printInvoice() {
-    const printContent = document.getElementById('invoice-content').innerHTML;
-    const originalContent = document.body.innerHTML;
-    
-    document.body.innerHTML = printContent;
-    window.print();
-    document.body.innerHTML = originalContent;
-    location.reload();
-}
-
-/* ---- Event Listeners ---- */
-function setupEvents() {
-    filterBtn.addEventListener('click', applyFilters);
-    resetFilters.addEventListener('click', resetAllFilters);
-    
-    prevPage.addEventListener('click', () => { 
-        if (currentPage > 1) { 
-            currentPage--; 
-            renderTable(); 
-        } 
-    });
-    
-    nextPage.addEventListener('click', () => { 
-        if ((currentPage * itemsPerPage) < filteredOrders.length) { 
-            currentPage++; 
-            renderTable(); 
-        } 
-    });
-    
-    selectAll.addEventListener('change', () => {
-        document.querySelectorAll('.order-checkbox').forEach(cb => {
-            cb.checked = selectAll.checked;
-            selectAll.checked ? selectedOrders.add(cb.dataset.orderId) : selectedOrders.delete(cb.dataset.orderId);
+        // Populate ordered items
+        const itemsBody = document.getElementById('modal-items-body');
+        itemsBody.innerHTML = '';
+        
+        order.items.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="px-4 py-2 text-sm">${item.product}</td>
+                <td class="px-4 py-2 text-sm">${item.quantity}</td>
+                <td class="px-4 py-2 text-sm">₹${item.price}</td>
+                <td class="px-4 py-2 text-sm">₹${item.subtotal}</td>
+            `;
+            itemsBody.appendChild(row);
         });
-        updateBulkDeleteButton();
-    });
-    
-    bulkDeleteBtn.addEventListener('click', () => {
-        if (selectedOrders.size === 0) return;
-        if (confirm(`Delete ${selectedOrders.size} selected orders?`)) {
-            orders = orders.filter(o => !selectedOrders.has(o.id));
-            localStorage.setItem('orders', JSON.stringify(orders));
-            selectedOrders.clear();
-            updateStats();
-            applyFilters();
-        }
-    });
-    
-    ordersTableBody.addEventListener('click', e => {
-        const cb = e.target.closest('.order-checkbox');
-        const edit = e.target.closest('.edit-order');
-        const invoice = e.target.closest('.invoice-order');
-        const del = e.target.closest('.delete-order');
         
-        if (cb) {
-            const id = cb.dataset.orderId;
-            cb.checked ? selectedOrders.add(id) : selectedOrders.delete(id);
-            selectAll.checked = [...document.querySelectorAll('.order-checkbox')].every(c => c.checked);
-            updateBulkDeleteButton();
+        document.getElementById('modal-total-amount').textContent = `₹${order.total}`;
+
+        // Populate payment details
+        document.getElementById('modal-payment-method').textContent = order.paymentMethod;
+        document.getElementById('modal-transaction-id').textContent = order.transactionId;
+        document.getElementById('modal-payment-status').value = order.paymentStatus;
+
+        // Populate delivery information
+        document.getElementById('modal-delivery-mode').textContent = order.deliveryMode;
+        document.getElementById('modal-tracking-id').textContent = order.trackingId || 'Not available';
+        
+        if (order.actualDelivery) {
+            const actualDeliveryDate = new Date(order.actualDelivery);
+            document.getElementById('modal-actual-delivery-date').textContent = 
+                actualDeliveryDate.toLocaleDateString('en-IN', { 
+                    day: '2-digit', 
+                    month: 'long', 
+                    year: 'numeric' 
+                });
+        } else {
+            document.getElementById('modal-actual-delivery-date').textContent = 'Not delivered yet';
+        }
+
+        // Populate admin notes
+        document.getElementById('admin-notes').value = order.adminNotes || '';
+
+        // Store current order ID for saving changes
+        document.getElementById('save-changes').dataset.orderId = orderId;
+
+        // Show modal
+        document.getElementById('order-details-modal').style.display = 'flex';
+    }
+
+    closeModal() {
+        document.getElementById('order-details-modal').style.display = 'none';
+    }
+
+    saveOrderChanges() {
+        const orderId = document.getElementById('save-changes').dataset.orderId;
+        const order = this.orders.find(o => o.id === orderId);
+        
+        if (!order) return;
+
+        // Update order status
+        order.status = document.getElementById('modal-order-status').value;
+        
+        // Update payment status
+        order.paymentStatus = document.getElementById('modal-payment-status').value;
+        
+        // Update admin notes
+        order.adminNotes = document.getElementById('admin-notes').value;
+
+        this.saveOrders();
+        this.renderOrders();
+        this.updateStats();
+        this.closeModal();
+        
+        // Show success message
+        this.showNotification('Order updated successfully!', 'success');
+    }
+
+    deleteOrder(orderId) {
+        if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
             return;
         }
+
+        this.orders = this.orders.filter(order => order.id !== orderId);
+        this.saveOrders();
+        this.applyFilters(); // Re-apply filters to update the view
         
-        if (edit) openModal(edit.dataset.orderId);
-        if (invoice) generateInvoice(invoice.dataset.orderId);
-        if (del) {
-            if (confirm('Delete this order?')) {
-                orders = orders.filter(o => o.id !== del.dataset.orderId);
-                localStorage.setItem('orders', JSON.stringify(orders));
-                updateStats();
-                applyFilters();
-            }
+        this.showNotification('Order deleted successfully!', 'success');
+    }
+
+    bulkDeleteOrders() {
+        if (this.selectedOrders.size === 0) return;
+        
+        if (!confirm(`Are you sure you want to delete ${this.selectedOrders.size} order(s)? This action cannot be undone.`)) {
+            return;
         }
-    });
-    
-    // Modal events
-    document.getElementById('close-modal').addEventListener('click', () => modal.style.display = 'none');
-    document.getElementById('close-modal-btn').addEventListener('click', () => modal.style.display = 'none');
-    document.getElementById('save-changes').addEventListener('click', saveModal);
-    modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
-    
-    // Invoice events
-    downloadInvoiceBtn.addEventListener('click', () => {
-        if (document.getElementById('save-changes').dataset.id) {
-            generateInvoice(document.getElementById('save-changes').dataset.id);
-        }
-    });
-    
-    printInvoiceBtn.addEventListener('click', printInvoice);
-    downloadPdfBtn.addEventListener('click', downloadPDF);
-    closeInvoiceBtn.addEventListener('click', () => invoiceModal.style.display = 'none');
-    closeInvoiceModalBtn.addEventListener('click', () => invoiceModal.style.display = 'none');
-    invoiceModal.addEventListener('click', e => { if (e.target === invoiceModal) invoiceModal.style.display = 'none'; });
+
+        this.orders = this.orders.filter(order => !this.selectedOrders.has(order.id));
+        this.selectedOrders.clear();
+        this.saveOrders();
+        this.applyFilters();
+        
+        this.showNotification(`${this.selectedOrders.size} order(s) deleted successfully!`, 'success');
+    }
+
+    generateInvoice() {
+        const orderId = document.getElementById('save-changes').dataset.orderId;
+        const order = this.orders.find(o => o.id === orderId);
+        
+        if (!order) return;
+
+        const invoiceContent = document.getElementById('invoice-content');
+        
+        // Format dates
+        const orderDate = new Date(order.date);
+        const formattedOrderDate = orderDate.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+        
+        const deliveryDate = new Date(order.expectedDelivery);
+        const formattedDeliveryDate = deliveryDate.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        invoiceContent.innerHTML = `
+            <div class="invoice-header">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <img src="../assets/images/logoo bg.png" alt="Kunash Enterprises" class="invoice-logo">
+                        <h1 class="text-2xl font-bold text-orange-600">Kunash Enterprises</h1>
+                        <p class="text-gray-600">Premium Dry Fruits & Nuts</p>
+                        <p class="text-gray-600">Bangalore, Karnataka - 560001</p>
+                        <p class="text-gray-600">GSTIN: 29AAECK1234L1Z5</p>
+                    </div>
+                    <div class="text-right">
+                        <h2 class="text-3xl font-bold text-gray-800">INVOICE</h2>
+                        <p class="text-gray-600 mt-2">Invoice #: ${order.id}</p>
+                        <p class="text-gray-600">Date: ${formattedOrderDate}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8 mb-8">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Bill To:</h3>
+                    <p class="font-medium">${order.customer.name}</p>
+                    <p>${order.customer.address}</p>
+                    <p>${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}</p>
+                    <p>${order.customer.email}</p>
+                    <p>${order.customer.phone}</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Order Details:</h3>
+                    <p><span class="font-medium">Order ID:</span> ${order.id}</p>
+                    <p><span class="font-medium">Order Date:</span> ${formattedOrderDate}</p>
+                    <p><span class="font-medium">Expected Delivery:</span> ${formattedDeliveryDate}</p>
+                    <p><span class="font-medium">Payment Method:</span> ${order.paymentMethod}</p>
+                    <p><span class="font-medium">Status:</span> <span class="capitalize">${order.status}</span></p>
+                </div>
+            </div>
+
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${order.items.map(item => `
+                        <tr>
+                            <td>${item.product}</td>
+                            <td>${item.quantity}</td>
+                            <td>₹${item.price}</td>
+                            <td>₹${item.subtotal}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-right font-semibold">Subtotal:</td>
+                        <td class="font-semibold">₹${order.total}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-right font-semibold">Shipping:</td>
+                        <td class="font-semibold">₹0</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-right font-semibold">Total:</td>
+                        <td class="font-semibold text-lg">₹${order.total}</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="mt-8 text-center text-gray-600">
+                <p>Thank you for your business with Kunash Enterprises!</p>
+                <p class="mt-2">For any queries, contact us at support@kunash.com or call +91-9876543210</p>
+            </div>
+        `;
+
+        // Show invoice modal
+        document.getElementById('invoice-modal').style.display = 'flex';
+    }
+
+    closeInvoiceModal() {
+        document.getElementById('invoice-modal').style.display = 'none';
+    }
+
+    printInvoice() {
+        const invoiceElement = document.getElementById('invoice-content');
+        const originalContents = document.body.innerHTML;
+        
+        document.body.innerHTML = invoiceElement.innerHTML;
+        window.print();
+        document.body.innerHTML = originalContents;
+        
+        // Re-initialize the order manager after printing
+        this.init();
+    }
+
+    downloadInvoicePDF() {
+        const invoiceElement = document.getElementById('invoice-content');
+        
+        const options = {
+            margin: 10,
+            filename: `invoice_${document.getElementById('modal-order-id').textContent}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(options).from(invoiceElement).save();
+    }
+
+    showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 animate-fadeIn ${
+            type === 'success' ? 'bg-green-500 text-white' : 
+            type === 'error' ? 'bg-red-500 text-white' : 
+            'bg-blue-500 text-white'
+        }`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
 }
 
-function updateBulkDeleteButton() {
-    const count = selectedOrders.size;
-    bulkDeleteBtn.disabled = count === 0;
-    bulkCount.textContent = count;
-}
-
-function openModal(id) {
-    const order = orders.find(o => o.id === id);
-    if (!order) return;
-    
-    const cust = customers.find(c => c.id === order.customerId) || {};
-    document.getElementById('customer-name').textContent = cust.name || 'N/A';
-    document.getElementById('customer-email').textContent = cust.email || 'N/A';
-    document.getElementById('customer-phone').textContent = cust.phone || 'N/A';
-    document.getElementById('customer-address').textContent = cust.address || 'N/A';
-    document.getElementById('customer-location').textContent = `${cust.city || ''}, ${cust.state || ''} - ${cust.pincode || ''}`;
-    
-    document.getElementById('modal-order-id').textContent = order.id;
-    document.getElementById('modal-order-date').textContent = formatDate(order.date);
-    document.getElementById('modal-delivery-date').textContent = order.expectedDelivery ? formatDate(order.expectedDelivery) : 'N/A';
-    document.getElementById('modal-order-status').value = order.orderStatus;
-    
-    const itemsBody = document.getElementById('modal-items-body');
-    itemsBody.innerHTML = '';
-    let total = 0;
-    
-    order.items.forEach(item => {
-        const prod = products.find(p => p.id === item.productId) || {};
-        const sub = item.quantity * item.price;
-        total += sub;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td class="px-4 py-2">${prod.name || 'Unknown'}</td><td class="px-4 py-2">${item.quantity}</td><td class="px-4 py-2">₹${item.price}</td><td class="px-4 py-2">₹${sub}</td>`;
-        itemsBody.appendChild(tr);
-    });
-    
-    document.getElementById('modal-total-amount').textContent = `₹${total}`;
-    document.getElementById('modal-payment-method').textContent = order.paymentMethod || 'N/A';
-    document.getElementById('modal-transaction-id').textContent = order.transactionId || 'N/A';
-    document.getElementById('modal-payment-status').value = order.paymentStatus;
-    document.getElementById('modal-delivery-mode').textContent = order.deliveryType || 'N/A';
-    document.getElementById('modal-tracking-id').textContent = order.trackingId || 'N/A';
-    document.getElementById('modal-actual-delivery-date').textContent = order.actualDelivery ? formatDate(order.actualDelivery) : 'Not delivered';
-    document.getElementById('admin-notes').value = order.adminNotes || '';
-    document.getElementById('save-changes').dataset.id = id;
-    
-    modal.style.display = 'flex';
-}
-
-function saveModal() {
-    const id = document.getElementById('save-changes').dataset.id;
-    const order = orders.find(o => o.id === id);
-    if (!order) return;
-    
-    order.orderStatus = document.getElementById('modal-order-status').value;
-    order.paymentStatus = document.getElementById('modal-payment-status').value;
-    order.adminNotes = document.getElementById('admin-notes').value;
-    
-    localStorage.setItem('orders', JSON.stringify(orders));
-    updateStats();
-    renderTable();
-    modal.style.display = 'none';
-}
-
-/* ---- Helpers ---- */
-function formatDate(d) {
-    return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-function formatStatus(s) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-}
+// Initialize the order manager when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new OrderManager();
+});

@@ -39,7 +39,7 @@
         .modal-content {
             background: white;
             border-radius: 8px;
-            max-width: 500px;
+            max-width: 800px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
@@ -59,11 +59,15 @@
             max-height: 100%;
             object-fit: contain;
         }
+        .img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
+        .sub-img-preview { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; margin: 4px; border: 1px solid #ccc; position: relative; }
+        .remove-img { position: absolute; top: -6px; right: -6px; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .dynamic-field { display: none; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
 <div class="flex h-screen">
-     <!-- Sidebar (unchanged) -->
+     <!-- Sidebar -->
     <div id="sidebar" class="w-64 bg-gray-800 text-white transition-all duration-300 fixed inset-y-0 left-0 z-20 flex flex-col">
         <div class="p-4 flex items-center justify-between">
             <img src="../assets/images/logoo bg.png" alt="Kunash Logo"
@@ -222,12 +226,26 @@
                 </div>
             </div>
 
-            <!-- Search & Add Button -->
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                <input id="search-inventory" type="text" placeholder="Search product…" class="w-full md:w-80 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 mb-4 md:mb-0">
-                <button id="add-stock-btn" class="bg-orange-600 hover:bg-orange-500 text-white font-medium py-2 px-6 rounded-lg flex items-center">
-                    <span class="material-icons mr-2">add</span> Add Stock
-                </button>
+            <!-- Search & Filters & Add Stock Button -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <input id="search-inventory" type="text" placeholder="Search product…" class="w-full md:w-80 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                
+                <div class="flex gap-3">
+                    <select id="filter-category" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <option value="">All Categories</option>
+                    </select>
+                    
+                    <select id="filter-status" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <option value="">All Status</option>
+                        <option value="in-stock">In Stock</option>
+                        <option value="low-stock">Low Stock</option>
+                        <option value="out-of-stock">Out of Stock</option>
+                    </select>
+
+                    <button id="add-stock-btn" class="bg-orange-600 hover:bg-orange-500 text-white font-medium py-2 px-6 rounded-lg flex items-center">
+                        <span class="material-icons mr-2">add</span> Add Stock
+                    </button>
+                </div>
             </div>
 
             <!-- Inventory Table -->
@@ -237,8 +255,10 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subcategory</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RAM</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Stock</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Low Threshold</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -253,73 +273,151 @@
 </div>
 
 <!-- Add Stock Modal -->
-<div id="stock-modal" class="modal-overlay hidden">
+<div id="add-stock-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <div class="p-6 border-b border-gray-200">
-            <h3 class="text-xl font-semibold text-orange-600" id="modal-title">Add New Product</h3>
+            <h3 class="text-xl font-semibold text-orange-600">Add New Stock</h3>
         </div>
         <div class="p-6">
-            <form id="stock-form">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-medium mb-2" for="product-name">Product Name *</label>
-                    <input type="text" id="product-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required>
+            <form id="add-stock-form" class="space-y-6">
+                <!-- Product Name -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Product Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="product-name" required class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-medium mb-2" for="product-category">Category *</label>
-                    <select id="product-category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required>
-                        <option value="">Select Category</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Clothing">Clothing</option>
-                        <option value="Home & Garden">Home & Garden</option>
-                        <option value="Books">Books</option>
-                        <option value="Toys">Toys</option>
-                        <option value="Sports">Sports</option>
-                        <option value="Beauty">Beauty</option>
-                        <option value="Automotive">Automotive</option>
+                <!-- Category & Subcategory -->
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">Category <span class="text-red-500">*</span></label>
+                        <select id="product-category" required class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">Subcategory</label>
+                        <select id="product-subcategory" class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                            <option value="">Select Subcategory (Optional)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Quantity & Cost -->
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">Quantity <span class="text-red-500">*</span></label>
+                        <input type="number" id="product-quantity" required min="0" class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">Cost (₹) <span class="text-red-500">*</span></label>
+                        <input type="number" id="product-cost" required min="0" step="0.01" class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                    </div>
+                </div>
+
+                <!-- Dynamic Fields (RAM) -->
+                <div id="ram-field" class="dynamic-field">
+                    <label class="block text-gray-700 font-medium mb-1">RAM</label>
+                    <select id="product-ram" class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                        <option value="">Select RAM</option>
+                        <option value="4GB">4GB</option>
+                        <option value="8GB">8GB</option>
+                        <option value="16GB">16GB</option>
+                        <option value="32GB">32GB</option>
                     </select>
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-medium mb-2" for="product-stock">Stock Quantity *</label>
-                    <input type="number" id="product-stock" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-medium mb-2" for="product-price">Price ($)</label>
-                    <input type="number" id="product-price" min="0" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-medium mb-2" for="product-description">Description</label>
-                    <textarea id="product-description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-medium mb-2">Product Image</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="image-preview w-32 h-32 bg-gray-100" id="image-preview">
-                            <span class="text-gray-400 text-sm">No image</span>
-                        </div>
-                        <div class="flex-1">
-                            <input type="file" id="product-image" accept="image/*" class="hidden">
-                            <button type="button" id="browse-image" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition">
-                                Browse Image
-                            </button>
-                            <p class="text-xs text-gray-500 mt-2">Supported formats: JPG, PNG, GIF</p>
-                        </div>
+                <!-- Stock Status & Product Status -->
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">Stock Status <span class="text-red-500">*</span></label>
+                        <select id="product-stock-status" required class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                            <option value="in-stock">In Stock</option>
+                            <option value="out-of-stock">Out of Stock</option>
+                        </select>
                     </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">Product Status <span class="text-red-500">*</span></label>
+                        <select id="product-status" required class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                            <option value="active">Available</option>
+                            <option value="discounted">Discounted</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Description</label>
+                    <textarea id="product-description" rows="3" class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="Enter product description..."></textarea>
+                </div>
+
+                <!-- Main Image -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Main Image <span class="text-red-500">*</span></label>
+                    <input type="file" id="main-image" accept="image/*" required class="w-full border p-2 rounded">
+                    <div id="main-image-preview" class="mt-2"></div>
+                </div>
+
+                <!-- Sub Images -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Sub Images (Optional)</label>
+                    <input type="file" id="sub-images" accept="image/*" multiple class="w-full border p-2 rounded">
+                    <div id="sub-images-preview" class="flex flex-wrap mt-2"></div>
                 </div>
             </form>
         </div>
         <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
-            <button type="button" id="cancel-modal" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition">Cancel</button>
-            <button type="button" id="save-product" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg transition">Save Product</button>
+            <button type="button" id="cancel-add-stock" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition">Cancel</button>
+            <button type="button" id="save-new-stock" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg transition">Add Stock</button>
         </div>
     </div>
 </div>
 
-<!-- ==================== PROFILE SYNC + SIDEBAR JS (SAME AS index.html) ==================== -->
+<!-- Update Stock Modal -->
+<div id="update-stock-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-orange-600" id="update-modal-title">Update Stock</h3>
+        </div>
+        <div class="p-6">
+            <form id="update-stock-form">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Product</label>
+                    <p id="update-modal-product-name" class="text-lg font-semibold text-gray-900">-</p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Current Stock</label>
+                    <p id="update-modal-current-stock" class="text-lg text-gray-700">-</p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2" for="new-stock">New Stock Quantity *</label>
+                    <input type="number" id="new-stock" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2" for="stock-action">Action Type</label>
+                    <select id="stock-action" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <option value="update">Update Stock</option>
+                        <option value="add">Add Stock</option>
+                        <option value="remove">Remove Stock</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2" for="stock-reason">Reason (Optional)</label>
+                    <textarea id="stock-reason" rows="3" placeholder="Enter reason for stock update..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+            <button type="button" id="cancel-update-stock" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition">Cancel</button>
+            <button type="button" id="save-stock-update" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg transition">Update Stock</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== PROFILE SYNC + SIDEBAR JS ==================== -->
 <script>
     // === PROFILE SYNC FUNCTION ===
     function updateHeaderProfile() {
@@ -382,7 +480,7 @@
     });
     window.addEventListener('profileUpdated', updateHeaderProfile);
 
-    // === SIDEBAR LOGIC (SAME AS index.html) ===
+    // === SIDEBAR LOGIC ===
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.querySelector('.main-content');
     const toggleBtn = document.getElementById('toggle-btn');
@@ -456,7 +554,6 @@
     });
 </script>
 
-<script src="../assets/js/main.js"></script>
 <script src="../assets/js/inventory.js"></script>
 </body>
 </html>
