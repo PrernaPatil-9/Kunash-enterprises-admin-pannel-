@@ -7,105 +7,73 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../assets/css/custom.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .sidebar-collapsed { width: 5rem !important; }
         .sidebar-collapsed .sidebar-logo { width: 3rem !important; height: 3rem !important; }
         .sidebar-collapsed .sidebar-text { display: none; }
         .main-content { transition: margin-left 0.3s ease; }
+        .table-container { overflow-x: auto; max-height: 70vh; }
+        .img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
+        .sub-images { display: flex; gap: 2px; }
+        .sub-images img { width: 24px; height: 24px; object-fit: cover; border-radius: 3px; }
+        .modal-img { max-width: 300px; max-height: 300px; object-fit: contain; border-radius: 8px; }
+        .sub-gallery img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; margin: 4px; border: 1px solid #ddd; }
+        .star { color: #fbbf24; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
     <div class="flex h-screen">
 
-        <!-- ==================== SIDEBAR (EXACTLY SAME AS index.html) ==================== -->
-        <div id="sidebar"
-            class="w-64 bg-gray-800 text-white transition-all duration-300 ease-in-out fixed inset-y-0 left-0 z-20 flex flex-col">
-            <!-- Logo + Toggle -->
+        <!-- Sidebar -->
+        <div id="sidebar" class="w-64 bg-gray-800 text-white transition-all duration-300 fixed inset-y-0 left-0 z-20 flex flex-col">
             <div class="p-4 flex items-center justify-between">
                 <img src="../assets/images/logoo bg.png" alt="Kunash Logo"
-                    class="w-[10rem] h-[4rem] object-contain transition-all duration-300 sidebar-logo">
-                <button id="toggle-btn" class="text-white focus:outline-none p-1 rounded hover:bg-gray-700">
+                     class="w-[10rem] h-[4rem] object-contain transition-all duration-300 sidebar-logo">
+                <button id="toggle-btn" class="text-white p-1 rounded hover:bg-gray-700">
                     <span class="material-icons text-xl">chevron_left</span>
                 </button>
             </div>
-
-            <!-- Navigation -->
             <nav class="mt-4 space-y-1 flex-1 px-2">
-                <a href="../index.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">dashboard</span>
-                    <span class="sidebar-text">Dashboard</span>
-                </a>
-                <a href="products.html"
-                    class="flex items-center py-2 px-3 bg-orange-600 font-semibold hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">inventory_2</span>
-                    <span class="sidebar-text">Products</span>
-                </a>
-                <a href="inventory.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">warehouse</span>
-                    <span class="sidebar-text">Inventory</span>
-                </a>
-                <a href="orders.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">shopping_cart</span>
-                    <span class="sidebar-text">Orders</span>
-                </a>
-                <a href="customers.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">people</span>
-                    <span class="sidebar-text">Customers</span>
-                </a>
-                <a href="banners.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">image</span>
-                    <span class="sidebar-text">Banners</span>
-                </a>
-                <a href="messages.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">mail</span>
-                    <span class="sidebar-text">Messages</span>
-                </a>
-                <a href="admins.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">admin_panel_settings</span>
-                    <span class="sidebar-text">Admin Management</span>
-                </a>
-                <a href="settings.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">settings</span>
-                    <span class="sidebar-text">Settings</span>
-                </a>
-                <a href="../login.html" id="logout-btn"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition mt-4">
-                    <span class="material-icons mr-3">logout</span>
-                    <span class="sidebar-text">Logout</span>
-                </a>
+                <a href="../index.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">dashboard</span><span class="sidebar-text">Dashboard</span></a>
+                <a href="products.html" class="flex items-center py-2 px-3 bg-orange-600 font-semibold hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">inventory_2</span><span class="sidebar-text">Products</span></a>
+                <a href="inventory.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">warehouse</span><span class="sidebar-text">Inventory</span></a>
+                <a href="orders.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">shopping_cart</span><span class="sidebar-text">Orders</span></a>
+                <a href="customers.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">people</span><span class="sidebar-text">Customers</span></a>
+                <a href="banners.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">image</span><span class="sidebar-text">Banners</span></a>
+                <a href="messages.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">mail</span><span class="sidebar-text">Messages</span></a>
+                <a href="discounts.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">local_offer</span><span class="sidebar-text">Discount Management</span></a>
+                <a href="admins.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                    <span class="material-icons mr-3">admin_panel_settings</span><span class="sidebar-text">Admin Management</span></a>
+                <a href="../login.html" id="logout-btn" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition mt-4">
+                    <span class="material-icons mr-3">logout</span><span class="sidebar-text">Logout</span></a>
             </nav>
         </div>
-        <!-- =========================================================================== -->
 
-        <!-- Main Content -->
+        <!-- ==================== MAIN CONTENT ==================== -->
         <div class="flex-1 flex flex-col overflow-hidden main-content ml-64 transition-all duration-300">
             <!-- Header -->
             <header class="bg-white shadow-md sticky top-0 z-50">
                 <div class="flex justify-between items-center p-4 container mx-auto">
-                    <!-- Left: Sidebar Toggle + Title -->
                     <div class="flex items-center space-x-4">
-                        <button id="sidebar-toggle"
-                            class="text-gray-600 hover:text-orange-600 focus:outline-none lg:hidden">
+                        <button id="sidebar-toggle" class="text-gray-600 hover:text-orange-600 focus:outline-none lg:hidden">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 6h16M4 12h16M4 18h16" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                         </button>
                         <h2 class="text-xl font-semibold text-orange-600">Manage Products</h2>
                     </div>
 
-                    <!-- Right: Admin Profile Dropdown -->
                     <div class="relative">
-                        <button id="profile-dropdown-btn"
-                            class="flex items-center space-x-3 text-gray-700 hover:text-orange-600 focus:outline-none transition">
+                        <button id="profile-dropdown-btn" class="flex items-center space-x-3 text-gray-700 hover:text-orange-600 focus:outline-none transition">
                             <div class="text-right hidden sm:block">
                                 <p class="text-sm font-medium">Welcome, Admin</p>
                                 <p class="text-xs text-gray-500">admin@kunash.com</p>
@@ -118,27 +86,20 @@
                             </svg>
                         </button>
 
-                        <!-- Dropdown Menu -->
-                        <div id="profile-dropdown"
-                            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 hidden z-50 animate-fadeIn">
+                        <div id="profile-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 hidden z-50">
                             <div class="px-4 py-2 border-b border-gray-100">
                                 <p class="text-sm font-semibold text-gray-800">Admin User</p>
                                 <p class="text-xs text-gray-500">admin@kunash.com</p>
                             </div>
                             <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                                <span class="material-icons text-lg mr-2">person</span>
-                                My Profile
+                                <span class="material-icons text-lg mr-2">person</span> My Profile
                             </a>
                             <a href="settings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                                <span class="material-icons text-lg mr-2">settings</span>
-                                Settings
+                                <span class="material-icons text-lg mr-2">settings</span> Settings
                             </a>
                             <hr class="my-1 border-gray-200">
-                            <a href="../login.html"
-                                id="logout-btn"
-                                class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">
-                                <span class="material-icons text-lg mr-2">logout</span>
-                                Logout
+                            <a href="../login.html" id="logout-btn" class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">
+                                <span class="material-icons text-lg mr-2">logout</span> Logout
                             </a>
                         </div>
                     </div>
@@ -147,39 +108,89 @@
 
             <!-- Products Content -->
             <main class="flex-1 overflow-y-auto p-6 container mx-auto">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <h2 class="text-3xl font-bold text-orange-600">Products</h2>
 
-                    <!-- Button group -->
-                    <div class="flex space-x-3">
+                    <div class="flex flex-wrap gap-2">
+                        <label class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition cursor-pointer">
+                            <input type="file" id="bulk-upload" accept=".csv,.xlsx" class="hidden"> Bulk Upload
+                        </label>
+                        <button id="bulk-delete" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition cursor-pointer" disabled>
+                            Delete
+                        </button>
+                        <button id="export-csv" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition cursor-pointer">
+                            Export CSV
+                        </button>
+                        <button id="export-excel" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition cursor-pointer">
+                            Export Excel
+                        </button>
                         <a href="add-product.html" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition">Add Product</a>
-                        <a href="edit-product.html" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition">Edit Product</a>
                         <button id="add-category-btn" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition">Add Category</button>
                     </div>
                 </div>
 
-               <!-- Products Table -->
+                <!-- Filters -->
+                <div class="bg-white p-4 rounded-lg shadow mb-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <input type="text" id="filter-name" placeholder="Search by name..." class="px-3 py-2 border rounded-md focus:ring-orange-500 focus:border-orange-500">
+                    <select id="filter-category" class="px-3 py-2 border rounded-md focus:ring-orange-500 focus:border-orange-500">
+                        <option value="">All Categories</option>
+                    </select>
+                    <select id="filter-subcategory" class="px-3 py-2 border rounded-md focus:ring-orange-500 focus:border-orange-500">
+                        <option value="">All Subcategories</option>
+                    </select>
+                    <div class="flex gap-2">
+                        <input type="number" id="filter-min-price" placeholder="Min Price" class="w-full px-3 py-2 border rounded-md">
+                        <input type="number" id="filter-max-price" placeholder="Max Price" class="w-full px-3 py-2 border rounded-md">
+                    </div>
+                </div>
+
+                <!-- Products Table -->
                 <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <table id="products-table" class="w-full">
-                        <thead class="bg-orange-100">
-                            <tr>
-                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">ID</th>
-                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Name</th>
-                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Category</th>
-                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Price</th>
-                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Stock</th>
-                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Type</th>
-                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="products-table-body"></tbody>
-                    </table>
+                    <div class="table-container">
+                        <table id="products-table" class="w-full min-w-max">
+                            <thead class="bg-orange-100 sticky top-0">
+                                <tr>
+                                    <th class="py-3 px-2 text-left text-sm font-medium text-gray-700">
+                                        <input type="checkbox" id="select-all">
+                                    </th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">ID</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Name</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Main Image</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Sub Images</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Category</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Subcategory</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">RAM</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Old Price</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">New Price</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Stock</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Status</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-table-body"></tbody>
+                        </table>
+                    </div>
                 </div>
             </main>
         </div>
     </div>
 
-    <!-- Add Category Modal -->
+    <!-- ==================== VIEW PRODUCT MODAL ==================== -->
+    <div id="view-product-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-orange-600">Product Details</h3>
+                <button id="close-view-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="view-product-content" class="space-y-6">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== ADD CATEGORY MODAL ==================== -->
     <div id="add-category-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
             <div class="flex justify-between items-center mb-6">
@@ -188,40 +199,33 @@
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
-
             <form id="add-category-form" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Category Name <span class="text-red-500">*</span></label>
                     <input type="text" id="category-name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500">
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Category Code</label>
                     <input type="text" id="category-code" placeholder="e.g., CAT001" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500">
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                     <textarea id="category-desc" rows="3" placeholder="Short description..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"></textarea>
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
                     <select id="parent-category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500">
                         <option value="">None (Top Level)</option>
                     </select>
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Category Image</label>
                     <input type="file" id="category-image" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md">
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
                     <input type="number" id="display-order" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500">
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status <span class="text-red-500">*</span></label>
                     <select id="category-status" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500">
@@ -229,7 +233,6 @@
                         <option value="inactive">Inactive</option>
                     </select>
                 </div>
-
                 <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" id="cancel-category" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition">Cancel</button>
                     <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition">Save Category</button>
@@ -238,146 +241,14 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/products.js" defer></script>
+    <!-- ==================== SCRIPTS ==================== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
 
-    <!-- ==================== PROFILE SYNC + SIDEBAR JS (SAME AS index.html) ==================== -->
-    <script>
-        // === PROFILE SYNC FUNCTION ===
-        function updateHeaderProfile() {
-            const profile = JSON.parse(localStorage.getItem('adminProfile')) || {
-                name: "Admin User", email: "admin@kunash.com", role: "System Administrator", photo: ""
-            };
-
-            const avatarContainer = document.querySelector('#profile-dropdown-btn + .relative .w-10.h-10') ||
-                                    document.querySelector('header .w-10.h-10.bg-orange-500');
-
-            const welcomeNameEl = document.querySelector('header .text-right p.font-medium');
-            const welcomeEmailEl = document.querySelector('header .text-right p.text-xs');
-            const dropdownName = document.querySelector('#profile-dropdown p.font-semibold');
-            const dropdownEmail = document.querySelector('#profile-dropdown p.text-xs');
-
-            if (!avatarContainer) return;
-
-            let img = avatarContainer.querySelector('img');
-            let letter = avatarContainer.querySelector('span');
-
-            if (profile.photo) {
-                if (!img) {
-                    img = document.createElement('img');
-                    img.className = 'w-full h-full rounded-full object-cover';
-                    img.alt = 'Profile';
-                    avatarContainer.innerHTML = '';
-                    avatarContainer.appendChild(img);
-                }
-                img.src = profile.photo;
-            } else {
-                if (!letter) {
-                    letter = document.createElement('span');
-                    letter.className = 'text-white font-bold text-lg';
-                    avatarContainer.innerHTML = '';
-                    avatarContainer.appendChild(letter);
-                }
-                letter.textContent = profile.name.charAt(0).toUpperCase();
-            }
-
-            if (welcomeNameEl) welcomeNameEl.textContent = profile.name;
-            if (welcomeEmailEl) welcomeEmailEl.textContent = profile.email;
-            if (dropdownName) dropdownName.textContent = profile.name;
-            if (dropdownEmail) dropdownEmail.textContent = profile.email;
-        }
-
-        // === INITIAL LOAD ===
-        document.addEventListener('DOMContentLoaded', () => {
-            updateHeaderProfile();
-
-            const dropdownBtn = document.getElementById('profile-dropdown-btn');
-            const dropdown = document.getElementById('profile-dropdown');
-            if (dropdownBtn && dropdown) {
-                dropdownBtn.onclick = () => dropdown.classList.toggle('hidden');
-            }
-        });
-
-        // === LISTEN FOR UPDATES ===
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'adminProfile') updateHeaderProfile();
-        });
-        window.addEventListener('profileUpdated', updateHeaderProfile);
-
-        // === SIDEBAR LOGIC (SAME AS index.html) ===
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.querySelector('.main-content');
-        const toggleBtn = document.getElementById('toggle-btn');
-        const toggleIcon = toggleBtn.querySelector('.material-icons');
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        let isCollapsed = false;
-
-        toggleBtn.addEventListener('click', () => {
-            isCollapsed = !isCollapsed;
-            if (isCollapsed) {
-                sidebar.classList.add('sidebar-collapsed');
-                mainContent.classList.remove('ml-64');
-                mainContent.classList.add('ml-20');
-                toggleIcon.textContent = 'chevron_right';
-            } else {
-                sidebar.classList.remove('sidebar-collapsed');
-                mainContent.classList.remove('ml-20');
-                mainContent.classList.add('ml-64');
-                toggleIcon.textContent = 'chevron_left';
-            }
-        });
-
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
-            });
-        }
-
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth < 1024) {
-                const isClickInside = sidebar.contains(e.target) || (sidebarToggle && sidebarToggle.contains(e.target));
-                if (!isClickInside && !sidebar.classList.contains('-translate-x-full')) {
-                    sidebar.classList.add('-translate-x-full');
-                }
-            }
-        });
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 1024) {
-                sidebar.classList.remove('-translate-x-full');
-                if (!isCollapsed) mainContent.classList.add('ml-64');
-            } else {
-                mainContent.classList.remove('ml-64', 'ml-20');
-            }
-        });
-
-        // Close dropdown outside click
-        document.addEventListener('click', function (e) {
-            const dropdown = document.getElementById('profile-dropdown');
-            const btn = document.getElementById('profile-dropdown-btn');
-            if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-
-        // Logout
-        document.getElementById('logout-btn')?.addEventListener('click', function () {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('adminAuth');
-                sessionStorage.clear();
-                window.location.href = '../login.html';
-            }
-        });
-
-        // Highlight active page
-        document.querySelectorAll('#sidebar a').forEach(link => {
-            if (link.href === window.location.href) {
-                link.classList.remove('hover:bg-orange-500');
-                link.classList.add('bg-orange-600', 'font-semibold');
-            }
-        });
-    </script>
+    <!-- Profile + Sidebar JS -->
+    <script src="../assets/js/profile-sidebar.js"></script>
+    
+    <!-- Products JS -->
+    <script src="../assets/js/products.js"></script>
 </body>
 </html>

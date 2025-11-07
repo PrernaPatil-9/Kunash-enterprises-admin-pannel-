@@ -63,70 +63,36 @@
 </head>
 <body class="bg-gray-50 font-sans">
 <div class="flex h-screen">
-    <!-- ==================== SIDEBAR (EXACTLY SAME AS index.html) ==================== -->
-    <div id="sidebar"
-        class="w-64 bg-gray-800 text-white transition-all duration-300 ease-in-out fixed inset-y-0 left-0 z-20 flex flex-col">
-        <!-- Logo + Toggle -->
+     <!-- Sidebar (unchanged) -->
+    <div id="sidebar" class="w-64 bg-gray-800 text-white transition-all duration-300 fixed inset-y-0 left-0 z-20 flex flex-col">
         <div class="p-4 flex items-center justify-between">
             <img src="../assets/images/logoo bg.png" alt="Kunash Logo"
-                class="w-[10rem] h-[4rem] object-contain transition-all duration-300 sidebar-logo">
-            <button id="toggle-btn" class="text-white focus:outline-none p-1 rounded hover:bg-gray-700">
+                 class="w-[10rem] h-[4rem] object-contain transition-all duration-300 sidebar-logo">
+            <button id="toggle-btn" class="text-white p-1 rounded hover:bg-gray-700">
                 <span class="material-icons text-xl">chevron_left</span>
             </button>
         </div>
-
-        <!-- Navigation -->
         <nav class="mt-4 space-y-1 flex-1 px-2">
-            <a href="../index.html"
-                class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                <span class="material-icons mr-3">dashboard</span>
-                <span class="sidebar-text">Dashboard</span>
-            </a>
-            <a href="products.html"
-                class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                <span class="material-icons mr-3">inventory_2</span>
-                <span class="sidebar-text">Products</span>
-            </a>
-            <a href="inventory.html"
-                class="flex items-center py-2 px-3 bg-orange-600 font-semibold hover:bg-orange-500 rounded-lg transition">
-                <span class="material-icons mr-3">warehouse</span>
-                <span class="sidebar-text">Inventory</span>
-            </a>
-            <a href="orders.html"
-                class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                <span class="material-icons mr-3">shopping_cart</span>
-                <span class="sidebar-text">Orders</span>
-            </a>
-            <a href="customers.html"
-                class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                <span class="material-icons mr-3">people</span>
-                <span class="sidebar-text">Customers</span>
-            </a>
-            <a href="banners.html"
-                class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                <span class="material-icons mr-3">image</span>
-                <span class="sidebar-text">Banners</span>
-            </a>
-            <a href="messages.html"
-                class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                <span class="material-icons mr-3">mail</span>
-                <span class="sidebar-text">Messages</span>
-            </a>
-            <a href="admins.html"
-                class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                <span class="material-icons mr-3">admin_panel_settings</span>
-                <span class="sidebar-text">Admin Management</span>
-            </a>
-            <a href="settings.html"
-                class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                <span class="material-icons mr-3">settings</span>
-                <span class="sidebar-text">Settings</span>
-            </a>
-            <a href="../login.html" id="logout-btn"
-                class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition mt-4">
-                <span class="material-icons mr-3">logout</span>
-                <span class="sidebar-text">Logout</span>
-            </a>
+            <a href="../index.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">dashboard</span><span class="sidebar-text">Dashboard</span></a>
+            <a href="products.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">inventory_2</span><span class="sidebar-text">Products</span></a>
+            <a href="inventory.html" class="flex items-center py-2 px-3 bg-orange-600 font-semibold hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">warehouse</span><span class="sidebar-text">Inventory</span></a>
+            <a href="orders.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">shopping_cart</span><span class="sidebar-text">Orders</span></a>
+            <a href="customers.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">people</span><span class="sidebar-text">Customers</span></a>
+            <a href="banners.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">image</span><span class="sidebar-text">Banners</span></a>
+            <a href="messages.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">mail</span><span class="sidebar-text">Messages</span></a>
+            <a href="discounts.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">local_offer</span><span class="sidebar-text">Discount Management</span></a>
+            <a href="admins.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">admin_panel_settings</span><span class="sidebar-text">Admin Management</span></a>
+            <a href="../login.html" id="logout-btn" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition mt-4">
+                <span class="material-icons mr-3">logout</span><span class="sidebar-text">Logout</span></a>
         </nav>
     </div>
     <!-- =========================================================================== -->

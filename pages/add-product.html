@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,102 +13,64 @@
         .sidebar-collapsed .sidebar-logo { width: 3rem !important; height: 3rem !important; }
         .sidebar-collapsed .sidebar-text { display: none; }
         .main-content { transition: margin-left 0.3s ease; }
+        .img-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px dashed #ddd; }
+        .sub-img-preview { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; margin: 4px; border: 1px solid #ccc; }
+        .remove-img { position: absolute; top: -6px; right: -6px; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .dynamic-field { display: none; }
     </style>
 </head>
-
 <body class="bg-gray-50 font-sans">
     <div class="flex h-screen">
 
-        <!-- ==================== SIDEBAR (EXACTLY SAME AS index.html) ==================== -->
-        <div id="sidebar"
-            class="w-64 bg-gray-800 text-white transition-all duration-300 ease-in-out fixed inset-y-0 left-0 z-20 flex flex-col">
-            <!-- Logo + Toggle -->
-            <div class="p-4 flex items-center justify-between">
-                <img src="../assets/images/logoo bg.png" alt="Kunash Logo"
-                    class="w-[10rem] h-[4rem] object-contain transition-all duration-300 sidebar-logo">
-                <button id="toggle-btn" class="text-white focus:outline-none p-1 rounded hover:bg-gray-700">
-                    <span class="material-icons text-xl">chevron_left</span>
-                </button>
-            </div>
-
-            <!-- Navigation -->
-            <nav class="mt-4 space-y-1 flex-1 px-2">
-                <a href="../index.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">dashboard</span>
-                    <span class="sidebar-text">Dashboard</span>
-                </a>
-                <a href="products.html"
-                    class="flex items-center py-2 px-3 bg-orange-600 font-semibold hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">inventory_2</span>
-                    <span class="sidebar-text">Products</span>
-                </a>
-                <a href="inventory.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">warehouse</span>
-                    <span class="sidebar-text">Inventory</span>
-                </a>
-                <a href="orders.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">shopping_cart</span>
-                    <span class="sidebar-text">Orders</span>
-                </a>
-                <a href="customers.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">people</span>
-                    <span class="sidebar-text">Customers</span>
-                </a>
-                <a href="banners.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">image</span>
-                    <span class="sidebar-text">Banners</span>
-                </a>
-                <a href="messages.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">mail</span>
-                    <span class="sidebar-text">Messages</span>
-                </a>
-                <a href="admins.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">admin_panel_settings</span>
-                    <span class="sidebar-text">Admin Management</span>
-                </a>
-                <a href="settings.html"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
-                    <span class="material-icons mr-3">settings</span>
-                    <span class="sidebar-text">Settings</span>
-                </a>
-                <a href="../login.html" id="logout-btn"
-                    class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition mt-4">
-                    <span class="material-icons mr-3">logout</span>
-                    <span class="sidebar-text">Logout</span>
-                </a>
-            </nav>
+        <!-- Sidebar (unchanged) -->
+    <div id="sidebar" class="w-64 bg-gray-800 text-white transition-all duration-300 fixed inset-y-0 left-0 z-20 flex flex-col">
+        <div class="p-4 flex items-center justify-between">
+            <img src="../assets/images/logoo bg.png" alt="Kunash Logo"
+                 class="w-[10rem] h-[4rem] object-contain transition-all duration-300 sidebar-logo">
+            <button id="toggle-btn" class="text-white p-1 rounded hover:bg-gray-700">
+                <span class="material-icons text-xl">chevron_left</span>
+            </button>
         </div>
-        <!-- =========================================================================== -->
+        <nav class="mt-4 space-y-1 flex-1 px-2">
+            <a href="../index.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">dashboard</span><span class="sidebar-text">Dashboard</span></a>
+            <a href="products.html" class="flex items-center py-2 px-3 bg-orange-600 font-semibold hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">inventory_2</span><span class="sidebar-text">Products</span></a>
+            <a href="inventory.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">warehouse</span><span class="sidebar-text">Inventory</span></a>
+            <a href="orders.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">shopping_cart</span><span class="sidebar-text">Orders</span></a>
+            <a href="customers.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">people</span><span class="sidebar-text">Customers</span></a>
+            <a href="banners.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">image</span><span class="sidebar-text">Banners</span></a>
+            <a href="messages.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">mail</span><span class="sidebar-text">Messages</span></a>
+            <a href="discounts.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">local_offer</span><span class="sidebar-text">Discount Management</span></a>
+            <a href="admins.html" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition">
+                <span class="material-icons mr-3">admin_panel_settings</span><span class="sidebar-text">Admin Management</span></a>
+            <a href="../login.html" id="logout-btn" class="flex items-center py-2 px-3 hover:bg-orange-500 rounded-lg transition mt-4">
+                <span class="material-icons mr-3">logout</span><span class="sidebar-text">Logout</span></a>
+        </nav>
+    </div>
 
         <!-- ==================== MAIN CONTENT ==================== -->
         <div class="flex-1 flex flex-col overflow-hidden main-content ml-64 transition-all duration-300">
-            <!-- Header -->
+           <!-- Header -->
             <header class="bg-white shadow-md sticky top-0 z-50">
                 <div class="flex justify-between items-center p-4 container mx-auto">
-                    <!-- Left: Sidebar Toggle + Title -->
                     <div class="flex items-center space-x-4">
-                        <button id="sidebar-toggle"
-                            class="text-gray-600 hover:text-orange-600 focus:outline-none lg:hidden">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 6h16M4 12h16M4 18h16"></path>
+                        <button id="sidebar-toggle" class="text-gray-600 hover:text-orange-600 focus:outline-none lg:hidden">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                         </button>
-                        <h2 class="text-xl font-semibold text-orange-600">Add Product</h2>
+                        <h2 class="text-xl font-semibold text-orange-600">Manage Products</h2>
                     </div>
 
-                    <!-- Right: Admin Profile Dropdown -->
                     <div class="relative">
-                        <button id="profile-dropdown-btn"
-                            class="flex items-center space-x-3 text-gray-700 hover:text-orange-600 focus:outline-none transition">
+                        <button id="profile-dropdown-btn" class="flex items-center space-x-3 text-gray-700 hover:text-orange-600 focus:outline-none transition">
                             <div class="text-right hidden sm:block">
                                 <p class="text-sm font-medium">Welcome, Admin</p>
                                 <p class="text-xs text-gray-500">admin@kunash.com</p>
@@ -122,90 +83,106 @@
                             </svg>
                         </button>
 
-                        <!-- Dropdown Menu -->
-                        <div id="profile-dropdown"
-                            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 hidden z-50 animate-fadeIn">
+                        <div id="profile-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 hidden z-50">
                             <div class="px-4 py-2 border-b border-gray-100">
                                 <p class="text-sm font-semibold text-gray-800">Admin User</p>
                                 <p class="text-xs text-gray-500">admin@kunash.com</p>
                             </div>
                             <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                                <span class="material-icons text-lg mr-2">person</span>
-                                My Profile
+                                <span class="material-icons text-lg mr-2">person</span> My Profile
                             </a>
                             <a href="settings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                                <span class="material-icons text-lg mr-2">settings</span>
-                                Settings
+                                <span class="material-icons text-lg mr-2">settings</span> Settings
                             </a>
                             <hr class="my-1 border-gray-200">
-                            <a href="../login.html"
-                                id="logout-btn"
-                                class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">
-                                <span class="material-icons text-lg mr-2">logout</span>
-                                Logout
+                            <a href="../login.html" id="logout-btn" class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">
+                                <span class="material-icons text-lg mr-2">logout</span> Logout
                             </a>
                         </div>
                     </div>
                 </div>
             </header>
 
-            <!-- Add Product Content -->
+            <!-- Add Product Form -->
             <main class="flex-1 overflow-y-auto p-6 container mx-auto">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-3xl font-bold text-orange-600">Add New Product</h2>
-                    <a href="products.html" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
-                        Back to Products
-                    </a>
+                    <a href="products.html" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition">Back to Products</a>
                 </div>
 
-                <form id="add-product-form" class="bg-white p-6 rounded-lg shadow space-y-4">
+                <form id="add-product-form" class="bg-white p-6 rounded-lg shadow space-y-6">
+                    <!-- Product Name -->
                     <div>
-                        <label for="name" class="block text-gray-700 font-medium mb-1">Name <span class="text-red-500">*</span></label>
-                        <input type="text" id="name" name="name" class="w-full border p-2 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500" required>
+                        <label class="block text-gray-700 font-medium mb-1">Product Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="name" required class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
                     </div>
 
+                    <!-- Category & Subcategory -->
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Category <span class="text-red-500">*</span></label>
+                            <select id="category" required class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                                <option value="">Select Category</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Subcategory</label>
+                            <select id="subcategory" class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                                <option value="">Select Subcategory (Optional)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Prices -->
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Old Price (₹)</label>
+                            <input type="number" id="oldPrice" min="0" step="0.01" class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">New Price (₹) <span class="text-red-500">*</span></label>
+                            <input type="number" id="newPrice" required min="0" step="0.01" class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                        </div>
+                    </div>
+
+                    <!-- Stock -->
                     <div>
-                        <label for="category" class="block text-gray-700 font-medium mb-1">Category <span class="text-red-500">*</span></label>
-                        <select id="category" name="category" class="w-full border p-2 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500" required>
-                            <option value="">Select Category</option>
-                            <!-- Populated dynamically -->
+                        <label class="block text-gray-700 font-medium mb-1">Stock Quantity <span class="text-red-500">*</span></label>
+                        <input type="number" id="stock" required min="0" class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                    </div>
+
+                    <!-- Dynamic Fields (RAM) -->
+                    <div id="ram-field" class="dynamic-field">
+                        <label class="block text-gray-700 font-medium mb-1">RAM</label>
+                        <select id="ram" class="w-full border p-3 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                            <option value="">Select RAM</option>
+                            <option value="4GB">4GB</option>
+                            <option value="8GB">8GB</option>
+                            <option value="16GB">16GB</option>
+                            <option value="32GB">32GB</option>
                         </select>
                     </div>
 
+                    <!-- Main Image -->
                     <div>
-                        <label for="price" class="block text-gray-700 font-medium mb-1">Price (₹) <span class="text-red-500">*</span></label>
-                        <input type="number" id="price" name="price" min="0" step="0.01" class="w-full border p-2 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500" required>
+                        <label class="block text-gray-700 font-medium mb-1">Main Image <span class="text-red-500">*</span></label>
+                        <input type="file" id="mainImage" accept="image/*" required class="w-full border p-2 rounded">
+                        <div id="mainImagePreview" class="mt-2"></div>
                     </div>
 
+                    <!-- Sub Images -->
                     <div>
-                        <label for="stock" class="block text-gray-700 font-medium mb-1">Stock <span class="text-red-500">*</span></label>
-                        <input type="number" id="stock" name="stock" min="0" class="w-full border p-2 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500" required>
+                        <label class="block text-gray-700 font-medium mb-1">Sub Images (Optional)</label>
+                        <input type="file" id="subImages" accept="image/*" multiple class="w-full border p-2 rounded">
+                        <div id="subImagesPreview" class="flex flex-wrap mt-2"></div>
                     </div>
 
-                    <div>
-                        <label for="type" class="block text-gray-700 font-medium mb-1">Type</label>
-                        <select id="type" name="type" class="w-full border p-2 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                            <option value="New">New</option>
-                            <option value="Old">Old</option>
-                            <option value="Refurbished">Refurbished</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="ram" class="block text-gray-700 font-medium mb-1">RAM (optional)</label>
-                        <input type="text" id="ram" name="ram" placeholder="e.g., 8GB DDR4" class="w-full border p-2 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                    </div>
-
-                    <div>
-                        <label for="cpu" class="block text-gray-700 font-medium mb-1">CPU (optional)</label>
-                        <input type="text" id="cpu" name="cpu" placeholder="e.g., Intel i5-12400" class="w-full border p-2 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                    </div>
-
+                    <!-- Submit -->
                     <div class="flex gap-3 pt-4">
-                        <button type="submit" class="bg-orange-600 text-white px-6 py-2 rounded hover:bg-orange-700 transition font-medium">
+                        <button type="submit" class="bg-orange-600 text-white px-6 py-3 rounded hover:bg-orange-700 transition font-medium">
                             Add Product
                         </button>
-                        <a href="products.html" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition font-medium">
+                        <a href="products.html" class="bg-gray-500 text-white px-6 py-3 rounded hover:bg-gray-600 transition font-medium">
                             Cancel
                         </a>
                     </div>
@@ -214,8 +191,238 @@
         </div>
     </div>
 
-    <!-- ==================== PROFILE SYNC + SIDEBAR JS (SAME AS index.html) ==================== -->
+    <!-- ==================== PROFILE + SIDEBAR JS ==================== -->
     <script>
+        // Profile & Sidebar (same as before)
+        function updateHeaderProfile() {
+            const profile = JSON.parse(localStorage.getItem('adminProfile')) || { name: "Admin User", email: "admin@kunash.com", photo: "" };
+            const avatar = document.querySelector('header .w-10.h-10.bg-orange-500');
+            const img = avatar.querySelector('img');
+            const span = avatar.querySelector('span');
+
+            if (profile.photo) {
+                if (!img) { const i = document.createElement('img'); i.className = 'w-full h-full rounded-full object-cover'; avatar.innerHTML = ''; avatar.appendChild(i); }
+                img.src = profile.photo;
+            } else {
+                if (!span) { const s = document.createElement('span'); s.className = 'text-white font-bold text-lg'; avatar.innerHTML = ''; avatar.appendChild(s); }
+                span.textContent = profile.name.charAt(0).toUpperCase();
+            }
+
+            document.querySelectorAll('[data-profile-name]').forEach(el => el.textContent = profile.name);
+            document.querySelectorAll('[data-profile-email]').forEach(el => el.textContent = profile.email);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeaderProfile();
+            document.getElementById('profile-dropdown-btn').onclick = () => document.getElementById('profile-dropdown').classList.toggle('hidden');
+        });
+
+        window.addEventListener('storage', e => e.key === 'adminProfile' && updateHeaderProfile());
+        window.addEventListener('profileUpdated', updateHeaderProfile);
+
+        const sidebar = document.getElementById('sidebar'), mainContent = document.querySelector('.main-content'),
+              toggleBtn = document.getElementById('toggle-btn'), toggleIcon = toggleBtn.querySelector('.material-icons'),
+              sidebarToggle = document.getElementById('sidebar-toggle');
+        let isCollapsed = false;
+
+        toggleBtn.addEventListener('click', () => {
+            isCollapsed = !isCollapsed;
+            sidebar.classList.toggle('sidebar-collapsed', isCollapsed);
+            mainContent.classList.toggle('ml-64', !isCollapsed); mainContent.classList.toggle('ml-20', isCollapsed);
+            toggleIcon.textContent = isCollapsed ? 'chevron_right' : 'chevron_left';
+        });
+
+        sidebarToggle?.addEventListener('click', () => sidebar.classList.toggle('-translate-x-full'));
+        document.addEventListener('click', e => {
+            if (window.innerWidth < 1024 && !sidebar.contains(e.target) && !sidebarToggle?.contains(e.target)) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) sidebar.classList.remove('-translate-x-full');
+            else mainContent.classList.remove('ml-64', 'ml-20');
+        });
+
+        document.addEventListener('click', e => {
+            const dropdown = document.getElementById('profile-dropdown'), btn = document.getElementById('profile-dropdown-btn');
+            if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.add('hidden');
+        });
+
+        document.getElementById('logout-btn')?.addEventListener('click', () => {
+            if (confirm('Logout?')) { localStorage.removeItem('adminAuth'); sessionStorage.clear(); location.href = '../login.html'; }
+        });
+
+        document.querySelectorAll('#sidebar a').forEach(a => a.href === location.href && a.classList.add('bg-orange-600', 'font-semibold'));
+    </script>
+
+    <!-- ==================== ADD PRODUCT LOGIC ==================== -->
+    <script>
+        let products = JSON.parse(localStorage.getItem('products') || '[]');
+        let categories = JSON.parse(localStorage.getItem('categories') || '[]');
+
+        // Sample categories with parent-child
+        if (categories.length === 0) {
+            categories = [
+                { id: 'CAT001', name: 'Laptops', code: 'LAP', parent: '', status: 'active', needsRam: true },
+                { id: 'CAT002', name: 'Keyboards', code: 'KEYB', parent: '', status: 'active', needsRam: false },
+                { id: 'CAT003', name: 'Mouse', code: 'MSE', parent: '', status: 'active', needsRam: false },
+                { id: 'CAT004', name: 'Accessories', code: 'ACC', parent: '', status: 'active', needsRam: false },
+                { id: 'CAT005', name: 'Gaming Laptops', code: 'GAM_LAP', parent: 'Laptops', status: 'active', needsRam: true },
+                { id: 'CAT006', name: 'Business Laptops', code: 'BUS_LAP', parent: 'Laptops', status: 'active', needsRam: true },
+                { id: 'CAT007', name: 'Student Laptops', code: 'STU_LAP', parent: 'Laptops', status: 'active', needsRam: true },
+                { id: 'CAT008', name: 'Ultrabooks', code: 'ULT_LAP', parent: 'Laptops', status: 'active', needsRam: true },
+                { id: 'CAT009', name: 'Wired Keyboards', code: 'WIR_KEYB', parent: 'Keyboards', status: 'active', needsRam: false },
+                { id: 'CAT010', name: 'Wireless Keyboards', code: 'WRL_KEYB', parent: 'Keyboards', status: 'active', needsRam: false },
+                { id: 'CAT011', name: 'Bluetooth Keyboards', code: 'BT_KEYB', parent: 'Keyboards', status: 'active', needsRam: false },
+                { id: 'CAT012', name: 'Laptop Keyboards', code: 'LAP_KEYB', parent: 'Keyboards', status: 'active', needsRam: false },
+                { id: 'CAT013', name: 'Desktop Keyboards', code: 'DESK_KEYB', parent: 'Keyboards', status: 'active', needsRam: false },
+                { id: 'CAT014', name: 'Wired Mouse', code: 'WIR_MSE', parent: 'Mouse', status: 'active', needsRam: false },
+                { id: 'CAT015', name: 'Wireless Mouse', code: 'WRL_MSE', parent: 'Mouse', status: 'active', needsRam: false },
+                { id: 'CAT016', name: 'Bluetooth Mouse', code: 'BT_MSE', parent: 'Mouse', status: 'active', needsRam: false },
+                { id: 'CAT017', name: 'Standard Mouse', code: 'STD_MSE', parent: 'Mouse', status: 'active', needsRam: false },
+                { id: 'CAT018', name: 'Gaming Mouse', code: 'GAM_MSE', parent: 'Mouse', status: 'active', needsRam: false },
+                { id: 'CAT019', name: 'Laptop Bags', code: 'LAP_BAG', parent: 'Accessories', status: 'active', needsRam: false },
+                { id: 'CAT020', name: 'Mouse Pads', code: 'MSE_PAD', parent: 'Accessories', status: 'active', needsRam: false },
+                { id: 'CAT021', name: 'USB Hubs', code: 'USB_HUB', parent: 'Accessories', status: 'active', needsRam: false },
+                { id: 'CAT022', name: 'Laptop Stands', code: 'LAP_STAND', parent: 'Accessories', status: 'active', needsRam: false },
+                { id: 'CAT023', name: 'Screen Protectors', code: 'SCR_PROT', parent: 'Accessories', status: 'active', needsRam: false }
+            ];
+            localStorage.setItem('categories', JSON.stringify(categories));
+        }
+
+        // DOM Elements
+        const form = document.getElementById('add-product-form');
+        const catSelect = document.getElementById('category');
+        const subcatSelect = document.getElementById('subcategory');
+        const mainImgInput = document.getElementById('mainImage');
+        const subImgInput = document.getElementById('subImages');
+        const mainPreview = document.getElementById('mainImagePreview');
+        const subPreview = document.getElementById('subImagesPreview');
+        const ramField = document.getElementById('ram-field');
+
+        // Populate Categories
+        function populateCategories() {
+            catSelect.innerHTML = '<option value="">Select Category</option>';
+            categories.filter(c => c.status === 'active' && !c.parent).forEach(c => {
+                const opt = new Option(`${c.name} (${c.code})`, c.name);
+                catSelect.appendChild(opt);
+            });
+        }
+
+        // Populate Subcategories based on selected category
+        catSelect.addEventListener('change', () => {
+            const selected = catSelect.value;
+            subcatSelect.innerHTML = '<option value="">Select Subcategory (Optional)</option>';
+            
+            // Show/hide RAM field based on category needs
+            const selectedCategory = categories.find(c => c.name === selected);
+            if (selectedCategory && selectedCategory.needsRam) {
+                ramField.style.display = 'block';
+            } else {
+                ramField.style.display = 'none';
+            }
+            
+            if (!selected) return;
+
+            const parentCat = categories.find(c => c.name === selected);
+            if (!parentCat) return;
+
+            categories.filter(c => c.parent === selected && c.status === 'active').forEach(c => {
+                const opt = new Option(`${c.name} (${c.code})`, c.name);
+                subcatSelect.appendChild(opt);
+            });
+        });
+
+        // Image to Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Main Image Preview
+        mainImgInput.addEventListener('change', async () => {
+            const file = mainImgInput.files[0];
+            if (!file) return;
+            const base64 = await fileToBase64(file);
+            mainPreview.innerHTML = `<img src="${base64}" class="img-preview">`;
+        });
+
+        // Sub Images Preview
+        subImgInput.addEventListener('change', async () => {
+            subPreview.innerHTML = '';
+            const files = Array.from(subImgInput.files);
+            for (const file of files) {
+                const base64 = await fileToBase64(file);
+                const wrapper = document.createElement('div');
+                wrapper.className = 'relative';
+                wrapper.innerHTML = `<img src="${base64}" class="sub-img-preview"><div class="remove-img" onclick="this.parentElement.remove()">×</div>`;
+                subPreview.appendChild(wrapper);
+            }
+        });
+
+        // Generate ID
+        function generateId() {
+            const max = products.reduce((m, p) => Math.max(m, parseInt(p.id.replace('PROD', '')) || 0), 0);
+            return 'PROD' + String(max + 1).padStart(3, '0');
+        }
+
+        // Submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const mainFile = mainImgInput.files[0];
+            if (!mainFile) return alert('Main image is required!');
+
+            const mainImage = await fileToBase64(mainFile);
+            const subImages = await Promise.all(Array.from(subImgInput.files).map(fileToBase64));
+
+            const newProduct = {
+                id: generateId(),
+                name: document.getElementById('name').value.trim(),
+                category: catSelect.value,
+                subcategory: subcatSelect.value || '',
+                oldPrice: parseFloat(document.getElementById('oldPrice').value) || 0,
+                newPrice: parseFloat(document.getElementById('newPrice').value),
+                stock: parseInt(document.getElementById('stock').value),
+                mainImage,
+                subImages,
+                ram: document.getElementById('ram').value,
+                status: 'active',
+                createdAt: new Date().toISOString()
+            };
+
+            if (!newProduct.name || !newProduct.category || isNaN(newProduct.newPrice) || isNaN(newProduct.stock)) {
+                return alert('Please fill all required fields correctly.');
+            }
+
+            products.push(newProduct);
+            localStorage.setItem('products', JSON.stringify(products));
+            alert('Product added successfully!');
+            form.reset();
+            mainPreview.innerHTML = '';
+            subPreview.innerHTML = '';
+            ramField.style.display = 'none';
+            if (confirm('Go to Products page?')) location.href = 'products.html';
+        });
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            populateCategories();
+        });
+
+        // Listen for category updates
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'categories') {
+                categories = JSON.parse(e.newValue || '[]');
+                populateCategories();
+            }
+        });
+
         // === PROFILE SYNC FUNCTION ===
         function updateHeaderProfile() {
             const profile = JSON.parse(localStorage.getItem('adminProfile')) || {
@@ -260,10 +467,8 @@
             if (dropdownEmail) dropdownEmail.textContent = profile.email;
         }
 
-        // === INITIAL LOAD ===
         document.addEventListener('DOMContentLoaded', () => {
             updateHeaderProfile();
-
             const dropdownBtn = document.getElementById('profile-dropdown-btn');
             const dropdown = document.getElementById('profile-dropdown');
             if (dropdownBtn && dropdown) {
@@ -271,184 +476,11 @@
             }
         });
 
-        // === LISTEN FOR UPDATES ===
         window.addEventListener('storage', (e) => {
             if (e.key === 'adminProfile') updateHeaderProfile();
         });
         window.addEventListener('profileUpdated', updateHeaderProfile);
 
-        // === SIDEBAR LOGIC (SAME AS index.html) ===
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.querySelector('.main-content');
-        const toggleBtn = document.getElementById('toggle-btn');
-        const toggleIcon = toggleBtn.querySelector('.material-icons');
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        let isCollapsed = false;
-
-        toggleBtn.addEventListener('click', () => {
-            isCollapsed = !isCollapsed;
-            if (isCollapsed) {
-                sidebar.classList.add('sidebar-collapsed');
-                mainContent.classList.remove('ml-64');
-                mainContent.classList.add('ml-20');
-                toggleIcon.textContent = 'chevron_right';
-            } else {
-                sidebar.classList.remove('sidebar-collapsed');
-                mainContent.classList.remove('ml-20');
-                mainContent.classList.add('ml-64');
-                toggleIcon.textContent = 'chevron_left';
-            }
-        });
-
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
-            });
-        }
-
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth < 1024) {
-                const isClickInside = sidebar.contains(e.target) || (sidebarToggle && sidebarToggle.contains(e.target));
-                if (!isClickInside && !sidebar.classList.contains('-translate-x-full')) {
-                    sidebar.classList.add('-translate-x-full');
-                }
-            }
-        });
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 1024) {
-                sidebar.classList.remove('-translate-x-full');
-                if (!isCollapsed) mainContent.classList.add('ml-64');
-            } else {
-                mainContent.classList.remove('ml-64', 'ml-20');
-            }
-        });
-
-        // Close dropdown outside click
-        document.addEventListener('click', function (e) {
-            const dropdown = document.getElementById('profile-dropdown');
-            const btn = document.getElementById('profile-dropdown-btn');
-            if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-
-        // Logout
-        document.getElementById('logout-btn')?.addEventListener('click', function () {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('adminAuth');
-                sessionStorage.clear();
-                window.location.href = '../login.html';
-            }
-        });
-
-        // Highlight active link
-        document.querySelectorAll('#sidebar a').forEach(link => {
-            if (link.href === window.location.href) {
-                link.classList.remove('hover:bg-orange-500');
-                link.classList.add('bg-orange-600', 'font-semibold');
-            }
-        });
-    </script>
-
-    <!-- ==================== ADD PRODUCT LOGIC (UNCHANGED) ==================== -->
-    <script>
-        // Load data
-        let products = JSON.parse(localStorage.getItem('products') || '[]');
-        let categories = JSON.parse(localStorage.getItem('categories') || '[]');
-
-        // Sample data if empty
-        if (categories.length === 0) {
-            categories = [
-                { id: 'CAT001', name: 'Laptops', code: 'LAP', status: 'active' },
-                { id: 'CAT002', name: 'Keyboards', code: 'KEYB', status: 'active' },
-                { id: 'CAT003', name: 'Mice', code: 'MSE', status: 'active' }
-            ];
-            localStorage.setItem('categories', JSON.stringify(categories));
-        }
-
-        if (products.length === 0) {
-            products = [
-                { id: 'PROD001', name: 'Wireless Mouse', category: 'Mice', price: 499, stock: 50, type: 'New', ram: '', cpu: '', status: 'active' },
-                { id: 'PROD002', name: 'Gaming Keyboard', category: 'Keyboards', price: 1299, stock: 30, type: 'New', ram: '', cpu: '', status: 'active' }
-            ];
-            localStorage.setItem('products', JSON.stringify(products));
-        }
-
-        // Populate Category Dropdown
-        function populateCategories() {
-            const categorySelect = document.getElementById('category');
-            categorySelect.innerHTML = '<option value="">Select Category</option>';
-
-            categories
-                .filter(c => c.status === 'active')
-                .sort((a, b) => (a.order || 999) - (b.order || 999))
-                .forEach(cat => {
-                    const opt = document.createElement('option');
-                    opt.value = cat.name;
-                    opt.textContent = `${cat.name} (${cat.code || 'no code'})`;
-                    categorySelect.appendChild(opt);
-                });
-        }
-
-        // Generate Product ID
-        function generateProductId() {
-            const lastId = products.length > 0 
-                ? Math.max(...products.map(p => parseInt(p.id.replace('PROD', '')) || 0))
-                : 0;
-            return 'PROD' + String(lastId + 1).padStart(3, '0');
-        }
-
-        // Form Submit
-        document.getElementById('add-product-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const newProduct = {
-                id: generateProductId(),
-                name: formData.get('name').trim(),
-                category: formData.get('category'),
-                price: parseFloat(formData.get('price')),
-                stock: parseInt(formData.get('stock')),
-                type: formData.get('type'),
-                ram: formData.get('ram').trim(),
-                cpu: formData.get('cpu').trim(),
-                status: 'active',
-                createdAt: new Date().toISOString()
-            };
-
-            // Validation
-            if (!newProduct.name || !newProduct.category || isNaN(newProduct.price) || isNaN(newProduct.stock)) {
-                alert('Please fill all required fields correctly.');
-                return;
-            }
-
-            // Save to localStorage
-            products.push(newProduct);
-            localStorage.setItem('products', JSON.stringify(products));
-
-            // Success
-            alert('Product added successfully!');
-
-            // Reset form
-            this.reset();
-            
-            // Optional: Redirect or stay
-            if (confirm('Go to Products page?')) {
-                window.location.href = 'products.html';
-            }
-        });
-
-        // Listen for category updates (from other pages)
-        window.addEventListener('categoriesUpdated', () => {
-            categories = JSON.parse(localStorage.getItem('categories') || '[]');
-            populateCategories();
-        });
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            populateCategories();
-        });
     </script>
 </body>
 </html>

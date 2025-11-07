@@ -1,22 +1,188 @@
 // ===============================================
-// Dashboard Logic - Separated JS File
+// Dashboard Logic – CHART GUARANTEED TO SHOW
 // File: assets/js/dashboard.js
 // ===============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Only run on dashboard
-    if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/' && !window.location.pathname.endsWith('/')) {
-        return;
-    }
+    // Check if we're on the dashboard page
+    const isDashboard = window.location.pathname.includes('index.html') || 
+                        window.location.pathname === '/' || 
+                        window.location.pathname.endsWith('/');
+    
+    if (!isDashboard) return;
 
+    // Initialize charts first, then update data
+    initializeCharts();
     updateDashboardStats();
-    setTimeout(initializeCharts, 500);
 });
 
-// ===============================================
-// Update All Stats
-// ===============================================
+// ------------------------------------------------------------------
+// 1. INITIALIZE CHARTS (container has fixed height → always visible)
+// ------------------------------------------------------------------
+function initializeCharts() {
+    console.log('Initializing charts...');
+    
+    // === PRODUCTS & CATEGORIES DOUGHNUT ===
+    const pcCtx = document.getElementById('productsCategoriesChart');
+    if (pcCtx) {
+        // Destroy existing chart if it exists
+        const existingChart = Chart.getChart(pcCtx);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+        
+        // Get initial data
+        const products = JSON.parse(localStorage.getItem('products') || '[]');
+        const categories = JSON.parse(localStorage.getItem('categories') || '[]');
+        
+        new Chart(pcCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Products', 'Categories'],
+                datasets: [{
+                    data: [products.length || 1, categories.length || 1],
+                    backgroundColor: ['#ea580c', '#f97316'],
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: { 
+                        enabled: true,
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+        console.log('Products & Categories chart initialized');
+    } else {
+        console.error('Products & Categories chart canvas not found');
+    }
+
+    // === SALES LINE CHART ===
+    const salesCtx = document.getElementById('salesChart');
+    if (salesCtx) {
+        // Destroy existing chart if it exists
+        const existingChart = Chart.getChart(salesCtx);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+        
+        // Generate sample sales data for the last 7 days
+        const salesData = generateSalesData();
+        
+        new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: salesData.labels,
+                datasets: [{
+                    label: 'Sales ($)',
+                    data: salesData.values,
+                    borderColor: '#ea580c',
+                    backgroundColor: 'rgba(234, 88, 12, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#ea580c',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#ea580c',
+                        borderWidth: 1
+                    }
+                },
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value;
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'nearest'
+                }
+            }
+        });
+        console.log('Sales chart initialized');
+    } else {
+        console.error('Sales chart canvas not found');
+    }
+}
+
+// Generate sample sales data for the last 7 days
+function generateSalesData() {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const values = [];
+    
+    // Start with a base value and add some randomness
+    let baseValue = 1200;
+    for (let i = 0; i < 7; i++) {
+        // Add some variation to make it look realistic
+        const variation = Math.floor(Math.random() * 1000) - 500;
+        values.push(Math.max(800, baseValue + variation));
+        baseValue = values[i]; // Use the last value as base for next
+    }
+    
+    return {
+        labels: days,
+        values: values
+    };
+}
+
+// ------------------------------------------------------------------
+// 2. UPDATE ALL STATS + CHART DATA
+// ------------------------------------------------------------------
 function updateDashboardStats() {
+    console.log('Updating dashboard stats...');
+    
     const products = JSON.parse(localStorage.getItem('products') || '[]');
     const categories = JSON.parse(localStorage.getItem('categories') || '[]');
     const orders = JSON.parse(localStorage.getItem('orders') || '[]');
@@ -24,21 +190,18 @@ function updateDashboardStats() {
     const messages = JSON.parse(localStorage.getItem('messages') || '[]');
     const banners = JSON.parse(localStorage.getItem('banners') || '[]');
 
-    // Active counts
     const activeProducts = products.filter(p => p.status !== 'inactive').length;
     const pendingOrders = orders.filter(o => o.status === 'pending').length;
     const activeBanners = banners.filter(b => b.active !== false).length;
 
-    // New customers this month
     const now = new Date();
     const newCustomers = customers.filter(c => {
-        const date = new Date(c.date || c.createdAt || c.created);
-        return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+        const d = new Date(c.date || c.createdAt || c.created || now);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }).length;
 
-    // Response rate
-    const respondedMessages = messages.filter(m => m.responded).length;
-    const responseRate = messages.length > 0 ? Math.round((respondedMessages / messages.length) * 100) : 0;
+    const responded = messages.filter(m => m.responded).length;
+    const responseRate = messages.length > 0 ? Math.round((responded / messages.length) * 100) : 0;
 
     // Update DOM
     document.getElementById('total-products').textContent = products.length;
@@ -47,51 +210,66 @@ function updateDashboardStats() {
     document.getElementById('total-customers').textContent = customers.length;
     document.getElementById('total-messages').textContent = messages.filter(m => !m.read).length;
     document.getElementById('total-banners').textContent = banners.length;
-
-    document.getElementById('active-products').textContent = activeProducts;
     document.getElementById('pending-orders').textContent = pendingOrders;
     document.getElementById('active-banners').textContent = activeBanners;
     document.getElementById('new-customers').textContent = newCustomers;
     document.getElementById('response-rate').textContent = responseRate + '%';
 
     // Progress bars
-    document.getElementById('active-products-progress').style.width = products.length > 0 ? `${(activeProducts / products.length) * 100}%` : '0%';
-    document.getElementById('pending-orders-progress').style.width = orders.length > 0 ? `${(pendingOrders / orders.length) * 100}%` : '0%';
-    document.getElementById('active-banners-progress').style.width = banners.length > 0 ? `${(activeBanners / banners.length) * 100}%` : '0%';
-    document.getElementById('new-customers-progress').style.width = customers.length > 0 ? `${(newCustomers / customers.length) * 100}%` : '0%';
+    document.getElementById('pending-orders-progress').style.width = orders.length ? `${(pendingOrders / orders.length) * 100}%` : '0%';
+    document.getElementById('active-banners-progress').style.width = banners.length ? `${(activeBanners / banners.length) * 100}%` : '0%';
+    document.getElementById('new-customers-progress').style.width = customers.length ? `${(newCustomers / customers.length) * 100}%` : '0%';
     document.getElementById('response-rate-progress').style.width = `${responseRate}%`;
 
+    // UPDATE DOUGHNUT CHART DATA
+    const doughnutChart = Chart.getChart('productsCategoriesChart');
+    if (doughnutChart) {
+        const p = products.length || 1;
+        const c = categories.length || 1;
+        doughnutChart.data.datasets[0].data = [p, c];
+        doughnutChart.update();
+        console.log('Doughnut chart updated with data:', [p, c]);
+    }
+
+    // Update other dashboard elements if they exist
     updateRecentActivities(orders, messages);
     updateTopProducts(products, orders);
 }
 
-// ===============================================
-// Recent Activities
-// ===============================================
+// ------------------------------------------------------------------
+// 3. RECENT ACTIVITIES & TOP PRODUCTS
+// ------------------------------------------------------------------
 function updateRecentActivities(orders, messages) {
     const container = document.getElementById('recent-activities');
     if (!container) return;
-
-    const activities = [];
-
-    orders.slice(-5).forEach(o => activities.push({
-        type: 'order',
-        text: `New order #${o.id} from ${o.customerName || 'Guest'}`,
-        time: o.date || o.createdAt,
-        icon: 'Package'
-    }));
-
-    messages.slice(-5).forEach(m => activities.push({
-        type: 'message',
-        text: `New message from ${m.name}`,
-        time: m.date || m.createdAt,
-        icon: 'Envelope'
-    }));
-
-    activities.sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 5);
-
+    
+    const acts = [];
+    
+    // Add recent orders
+    orders.slice(-5).forEach(o => {
+        acts.push({ 
+            type: 'order', 
+            text: `New order #${o.id} from ${o.customerName || 'Guest'}`, 
+            time: o.date || o.createdAt, 
+            icon: '📦' 
+        });
+    });
+    
+    // Add recent messages
+    messages.slice(-5).forEach(m => {
+        acts.push({ 
+            type: 'message', 
+            text: `New message from ${m.name}`, 
+            time: m.date || m.createdAt, 
+            icon: '✉️' 
+        });
+    });
+    
+    // Sort by time and limit to 5
+    acts.sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 5);
+    
     container.innerHTML = '';
-    activities.forEach(a => {
+    acts.forEach(a => {
         const el = document.createElement('div');
         el.className = 'flex items-start border-b border-gray-200 py-3 last:border-0';
         el.innerHTML = `
@@ -105,37 +283,33 @@ function updateRecentActivities(orders, messages) {
     });
 }
 
-// ===============================================
-// Top Products
-// ===============================================
 function updateTopProducts(products, orders) {
     const container = document.getElementById('top-products');
     if (!container) return;
-
+    
     const sales = {};
-    orders.forEach(o => {
+    orders.forEach(o => { 
         if (o.items) {
-            o.items.forEach(item => {
-                sales[item.productId] = (sales[item.productId] || 0) + item.quantity;
+            o.items.forEach(i => {
+                sales[i.productId] = (sales[i.productId] || 0) + (i.quantity || 1);
             });
         }
     });
-
-    const list = products.map(p => ({
-        ...p,
-        sales: sales[p.id] || 0
-    })).sort((a, b) => b.sales - a.sales).slice(0, 5);
-
+    
+    const list = products.map(p => ({ ...p, sales: sales[p.id] || 0 }))
+                        .sort((a, b) => b.sales - a.sales)
+                        .slice(0, 5);
+    
     container.innerHTML = '';
     list.forEach(p => {
         const el = document.createElement('div');
         el.className = 'flex items-center border-b border-gray-200 py-3 last:border-0';
         el.innerHTML = `
             <div class="w-10 h-10 bg-orange-100 rounded-md flex items-center justify-center mr-3">
-                <span class="text-orange-500 font-semibold">${p.name.charAt(0).toUpperCase()}</span>
+                <span class="text-orange-500 font-semibold">${p.name ? p.name.charAt(0).toUpperCase() : 'P'}</span>
             </div>
             <div class="flex-1">
-                <p class="text-sm font-medium">${p.name}</p>
+                <p class="text-sm font-medium">${p.name || 'Unknown Product'}</p>
                 <p class="text-xs text-gray-500">${p.category || 'Uncategorized'}</p>
             </div>
             <div class="text-right">
@@ -147,87 +321,29 @@ function updateTopProducts(products, orders) {
     });
 }
 
-// ===============================================
-// Format Date
-// ===============================================
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = Math.abs(now - date);
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
+function formatDate(str) {
+    if (!str) return 'Recently';
+    
+    const d = new Date(str);
+    if (isNaN(d.getTime())) return 'Recently';
+    
+    const diff = Math.abs(Date.now() - d);
+    const days = Math.ceil(diff / 86400000);
+    
     if (days === 1) return 'Yesterday';
     if (days < 7) return `${days} days ago`;
-    return date.toLocaleDateString();
+    if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+    
+    return d.toLocaleDateString();
 }
 
-// ===============================================
-// Initialize Charts
-// ===============================================
-function initializeCharts() {
-    // Sales Line Chart
-    new Chart(document.getElementById('salesChart'), {
-        type: 'line',
-        data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            datasets: [{
-                label: 'Sales ($)',
-                data: [1200, 1900, 1500, 2200, 1800, 2500, 2100],
-                borderColor: '#ea580c',
-                backgroundColor: 'rgba(234, 88, 12, 0.1)',
-                borderWidth: 2,
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-    });
-
-    // Category Doughnut
-    new Chart(document.getElementById('categoryChart'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Electronics', 'Clothing', 'Home & Garden', 'Books', 'Toys'],
-            datasets: [{
-                data: [30, 25, 20, 15, 10],
-                backgroundColor: ['#ea580c', '#f97316', '#fb923c', '#fdba74', '#fed7aa'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom' } }
-        }
-    });
-
-    // Order Status Bar
-    new Chart(document.getElementById('orderStatusChart'), {
-        type: 'bar',
-        data: {
-            labels: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
-            datasets: [{
-                label: 'Orders',
-                data: [12, 19, 8, 25, 3],
-                backgroundColor: '#ea580c',
-                borderWidth: 0
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-    });
-
-    // Revenue Bar
-    new Chart(document.getElementById('revenueChart'), {
-        type: 'bar',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [{
-                label: 'Revenue ($)',
-                data: [12000, 19000, 15000, 22000, 18000, 25000],
-                backgroundColor: '#ea580c',
-                borderWidth: 0
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-    });
+// Export functions for potential use elsewhere
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        initializeCharts,
+        updateDashboardStats,
+        updateRecentActivities,
+        updateTopProducts,
+        formatDate
+    };
 }

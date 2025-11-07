@@ -4,6 +4,7 @@ let customers = [];
 let currentPage = 1;
 const itemsPerPage = 10;
 let filteredCustomers = [];
+let selectedCustomers = new Set();
 
 // Initialize customers page
 function initCustomersPage() {
@@ -111,6 +112,7 @@ function saveCustomers() {
 function renderCustomersTable() {
     const tableBody = document.getElementById('customers-table-body');
     const emptyState = document.getElementById('empty-state');
+    const deleteSelectedBtn = document.getElementById('delete-selected');
     
     // Calculate pagination
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -122,6 +124,7 @@ function renderCustomersTable() {
     if (customersToShow.length === 0) {
         tableBody.innerHTML = '';
         emptyState.classList.remove('hidden');
+        deleteSelectedBtn.classList.add('hidden');
         return;
     }
     
@@ -129,10 +132,14 @@ function renderCustomersTable() {
     
     customersToShow.forEach((customer, index) => {
         const srNo = startIndex + index + 1;
+        const isSelected = selectedCustomers.has(customer.id);
         const row = document.createElement('tr');
         row.className = 'table-row-hover';
         
         row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+                <input type="checkbox" class="customer-checkbox rounded border-gray-300 text-orange-600 focus:ring-orange-500" data-id="${customer.id}" ${isSelected ? 'checked' : ''}>
+            </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${srNo}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${customer.id}</td>
             <td class="px-6 py-4 whitespace-nowrap">
@@ -163,18 +170,26 @@ function renderCustomersTable() {
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(customer.joinedDate)}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <button class="text-orange-600 hover:text-orange-900 view-customer mr-3" data-id="${customer.id}" title="View Details">
-                    👁️ View
+                    👁️ 
                 </button>
                 <button class="text-green-600 hover:text-green-900 edit-customer mr-3" data-id="${customer.id}" title="Edit Customer">
-                    ✏️ Edit
+                    ✏️ 
                 </button>
                 <button class="text-red-600 hover:text-red-900 delete-customer" data-id="${customer.id}" title="Delete Customer">
-                    🗑️ Delete
+                    🗑️ 
                 </button>
             </td>
         `;
         tableBody.appendChild(row);
     });
+    
+    // Show/hide delete selected button
+    if (selectedCustomers.size > 0) {
+        deleteSelectedBtn.classList.remove('hidden');
+        deleteSelectedBtn.textContent = `Delete (${selectedCustomers.size})`;
+    } else {
+        deleteSelectedBtn.classList.add('hidden');
+    }
     
     // Add event listeners to action buttons
     addActionEventListeners();
@@ -194,6 +209,21 @@ function formatAddress(customer) {
 
 // Add event listeners to action buttons
 function addActionEventListeners() {
+    // Checkbox event listeners
+    document.querySelectorAll('.customer-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const customerId = e.target.getAttribute('data-id');
+            if (e.target.checked) {
+                selectedCustomers.add(customerId);
+            } else {
+                selectedCustomers.delete(customerId);
+            }
+            updateSelectAllCheckbox();
+            renderCustomersTable();
+        });
+    });
+    
+    // View customer details
     document.querySelectorAll('.view-customer').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const customerId = e.target.getAttribute('data-id');
@@ -201,6 +231,7 @@ function addActionEventListeners() {
         });
     });
     
+    // Edit customer
     document.querySelectorAll('.edit-customer').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const customerId = e.target.getAttribute('data-id');
@@ -208,6 +239,7 @@ function addActionEventListeners() {
         });
     });
     
+    // Delete single customer
     document.querySelectorAll('.delete-customer').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const customerId = e.target.getAttribute('data-id');
@@ -370,6 +402,31 @@ function deleteCustomer(customerId) {
     }
 }
 
+// Delete selected customers
+function deleteSelectedCustomers() {
+    if (selectedCustomers.size === 0) return;
+    
+    const selectedCustomerNames = customers
+        .filter(c => selectedCustomers.has(c.id))
+        .map(c => c.name);
+    
+    const hasOrders = customers.some(c => 
+        selectedCustomers.has(c.id) && getCustomerOrderCount(c.id) > 0
+    );
+    
+    if (hasOrders) {
+        alert('Cannot delete customers who have orders. Please delete their orders first.');
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to delete ${selectedCustomers.size} customer(s)?\n\n${selectedCustomerNames.join(', ')}`)) {
+        customers = customers.filter(c => !selectedCustomers.has(c.id));
+        selectedCustomers.clear();
+        saveCustomers();
+        showNotification(`${selectedCustomers.size} customers deleted successfully`, 'success');
+    }
+}
+
 // Save customer (update only)
 function saveCustomer(customerData) {
     const customerId = document.getElementById('customer-id').value;
@@ -418,6 +475,7 @@ function filterCustomers() {
     });
     
     currentPage = 1;
+    selectedCustomers.clear();
     renderCustomersTable();
     updatePagination();
 }
@@ -428,6 +486,7 @@ function clearFilters() {
     document.getElementById('status-filter').value = 'all';
     filteredCustomers = [...customers];
     currentPage = 1;
+    selectedCustomers.clear();
     renderCustomersTable();
     updatePagination();
 }
@@ -465,6 +524,45 @@ function updatePagination() {
     // Update button states
     prevButton.disabled = currentPage === 1;
     nextButton.disabled = currentPage === totalPages || totalPages === 0;
+}
+
+// Update select all checkbox
+function updateSelectAllCheckbox() {
+    const selectAllCheckbox = document.getElementById('select-all');
+    const currentPageCustomers = filteredCustomers.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+    
+    const allSelected = currentPageCustomers.every(customer => 
+        selectedCustomers.has(customer.id)
+    );
+    
+    selectAllCheckbox.checked = allSelected;
+    selectAllCheckbox.indeterminate = !allSelected && currentPageCustomers.some(customer => 
+        selectedCustomers.has(customer.id)
+    );
+}
+
+// Select all customers on current page
+function selectAllCustomers() {
+    const selectAllCheckbox = document.getElementById('select-all');
+    const currentPageCustomers = filteredCustomers.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+    
+    if (selectAllCheckbox.checked) {
+        currentPageCustomers.forEach(customer => {
+            selectedCustomers.add(customer.id);
+        });
+    } else {
+        currentPageCustomers.forEach(customer => {
+            selectedCustomers.delete(customer.id);
+        });
+    }
+    
+    renderCustomersTable();
 }
 
 // Setup event listeners
@@ -518,6 +616,12 @@ function setupEventListeners() {
         }
     });
     
+    // Select all checkbox
+    document.getElementById('select-all')?.addEventListener('change', selectAllCustomers);
+    
+    // Delete selected button
+    document.getElementById('delete-selected')?.addEventListener('click', deleteSelectedCustomers);
+    
     // Close modals when clicking outside
     document.getElementById('customer-modal')?.addEventListener('click', function(e) {
         if (e.target === this) {
@@ -530,6 +634,46 @@ function setupEventListeners() {
             closeDetailsModal();
         }
     });
+}
+
+// Utility functions
+function formatDate(str) {
+    if (!str) return 'N/A';
+    
+    const d = new Date(str);
+    if (isNaN(d.getTime())) return 'N/A';
+    
+    return d.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+function generateId() {
+    return 'CUST' + Math.random().toString(36).substr(2, 9).toUpperCase();
+}
+
+function showNotification(message, type = 'success') {
+    const container = document.getElementById('notification-container');
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    container.appendChild(notification);
+    
+    // Show notification
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Hide and remove notification
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            container.removeChild(notification);
+        }, 300);
+    }, 3000);
 }
 
 // Initialize customers page when DOM is loaded
