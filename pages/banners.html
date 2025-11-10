@@ -113,6 +113,42 @@
         input:not(:checked) + .slider {
             background-color: #EF4444;
         }
+
+        /* Pagination Styles */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .pagination button {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 8px;
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #374151;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pagination button:hover {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+        .pagination button.active {
+            background: #ea580c;
+            color: white;
+            border-color: #ea580c;
+        }
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f9fafb;
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
@@ -181,9 +217,6 @@
                             <a href="pages/profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
                                 <span class="material-icons text-lg mr-2">person</span> My Profile
                             </a>
-                            <!-- <a href="pages/settings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                                <span class="material-icons text-lg mr-2">settings</span> Settings
-                            </a> -->
                             <hr class="my-1 border-gray-200">
                             <a href="login.html" id="logout-btn" class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">
                                 <span class="material-icons text-lg mr-2">logout</span> Logout
@@ -232,6 +265,8 @@
                     </thead>
                     <tbody></tbody>
                 </table>
+                <!-- Pagination will be injected here -->
+                <div id="pagination-container" class="p-4 border-t border-gray-200"></div>
             </div>
             <!-- Card View -->
             <div id="card-view" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>

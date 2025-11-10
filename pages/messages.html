@@ -14,12 +14,58 @@
         .main-content { transition: margin-left 0.3s ease; }
         .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom styles for messages */
+        .message-card {
+            transition: all 0.3s ease;
+            border-left-width: 4px;
+        }
+        .message-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .message-unread {
+            border-left-color: #ea580c;
+        }
+        .message-read {
+            border-left-color: #d1d5db;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .notification {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification.success {
+            background-color: #10b981;
+        }
+        .notification.error {
+            background-color: #ef4444;
+        }
+        .notification.info {
+            background-color: #3b82f6;
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
     <div class="flex h-screen">
 
-       <!-- Sidebar (unchanged) -->
+       <!-- Sidebar -->
     <div id="sidebar" class="w-64 bg-gray-800 text-white transition-all duration-300 fixed inset-y-0 left-0 z-20 flex flex-col">
         <div class="p-4 flex items-center justify-between">
             <img src="../assets/images/logoo bg.png" alt="Kunash Logo"
@@ -51,6 +97,7 @@
                 <span class="material-icons mr-3">logout</span><span class="sidebar-text">Logout</span></a>
         </nav>
     </div>
+
         <!-- =========================================================================== -->
 
         <!-- Main Content -->
@@ -113,19 +160,91 @@
 
             <!-- Messages Content -->
             <main class="flex-1 overflow-y-auto p-6 container mx-auto">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold text-orange-600">Contact Messages</h2>
-                    <div class="flex space-x-2">
-                        <button id="mark-all-read" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">Mark All Read</button>
-                        <button id="delete-all-read" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Delete All Read</button>
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <!-- Total Messages -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                        <div class="flex items-center">
+                            <div class="icon bg-orange-100 text-orange-600 p-3 rounded-lg">
+                                <span class="material-icons">mail</span>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Total Messages</p>
+                                <p id="total-messages-count" class="text-2xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Unread Messages -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                        <div class="flex items-center">
+                            <div class="icon bg-red-100 text-red-600 p-3 rounded-lg">
+                                <span class="material-icons">mark_email_unread</span>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Unread Messages</p>
+                                <p id="unread-messages-count" class="text-2xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Business Inquiries -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                        <div class="flex items-center">
+                            <div class="icon bg-blue-100 text-blue-600 p-3 rounded-lg">
+                                <span class="material-icons">business_center</span>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Business Inquiries</p>
+                                <p id="business-inquiries-count" class="text-2xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Support Requests -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                        <div class="flex items-center">
+                            <div class="icon bg-green-100 text-green-600 p-3 rounded-lg">
+                                <span class="material-icons">support_agent</span>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Support Requests</p>
+                                <p id="support-requests-count" class="text-2xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-orange-600">Customer Messages</h2>
+                    <div class="flex space-x-2">
+                        <button id="mark-all-read" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center">
+                            <span class="material-icons mr-2">mark_email_read</span>
+                            Mark All Read
+                        </button>
+                        <button id="delete-all-read" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center">
+                            <span class="material-icons mr-2">delete_sweep</span>
+                            Delete All Read
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
                 <div class="bg-white p-4 rounded-lg shadow mb-6">
                     <input type="text" id="search-messages" placeholder="Search by name, email, subject, or message..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
                 </div>
 
+                <!-- Messages List -->
                 <div id="messages-list" class="space-y-4"></div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden bg-white rounded-lg shadow p-8 text-center">
+                    <div class="empty-state">
+                        <div class="empty-state-icon text-6xl mb-4">📧</div>
+                        <h3 class="empty-state-title text-xl font-semibold mb-2">No Messages Found</h3>
+                        <p class="empty-state-description text-gray-500">No customer messages available or check if filters are applied.</p>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -141,10 +260,10 @@
         </div>
     </div>
 
-    <!-- Notification -->
-    <div id="notification" class="fixed bottom-4 right-4 hidden p-4 rounded-lg shadow-lg text-white"></div>
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
 
-    <!-- ==================== PROFILE SYNC + SIDEBAR JS (SAME AS index.html) ==================== -->
+    <!-- ==================== PROFILE SYNC + SIDEBAR JS ==================== -->
     <script>
         // === PROFILE SYNC FUNCTION ===
         function updateHeaderProfile() {
@@ -207,7 +326,7 @@
         });
         window.addEventListener('profileUpdated', updateHeaderProfile);
 
-        // === SIDEBAR LOGIC (SAME AS index.html) ===
+        // === SIDEBAR LOGIC ===
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.querySelector('.main-content');
         const toggleBtn = document.getElementById('toggle-btn');
@@ -280,9 +399,7 @@
             }
         });
     </script>
-    <!-- =========================================================================== -->
 
-    <script src="../assets/js/main.js"></script>
     <script src="../assets/js/messages.js"></script>
 </body>
 </html>

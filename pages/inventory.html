@@ -248,15 +248,34 @@
                 </div>
             </div>
 
+            <!-- Bulk Actions -->
+            <div id="bulk-actions" class="hidden mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center">
+                        <span id="selected-count" class="text-sm font-medium text-gray-700">0 items selected</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="reset-selection" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition">
+                            Reset
+                        </button>
+                        <button id="delete-selected" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition">
+                            Delete Selected
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Inventory Table -->
             <div class="bg-white rounded-lg shadow-md overflow-hidden table-wrapper">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <input type="checkbox" id="select-all" class="rounded border-gray-300 text-orange-600 focus:ring-orange-500">
+                            </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subcategory</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RAM</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Stock</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -267,6 +286,24 @@
                         <!-- Filled by JS -->
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination" class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-sm text-gray-700">
+                    Showing <span id="pagination-start">0</span> to <span id="pagination-end">0</span> of <span id="pagination-total">0</span> results
+                </div>
+                <div class="flex gap-1">
+                    <button id="prev-page" class="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Previous
+                    </button>
+                    <div id="page-numbers" class="flex gap-1">
+                        <!-- Page numbers will be inserted here -->
+                    </div>
+                    <button id="next-page" class="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Next
+                    </button>
+                </div>
             </div>
         </main>
     </div>

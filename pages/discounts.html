@@ -76,6 +76,17 @@
             background:white; border-radius:8px; width:90%; max-width:500px;
             max-height:90vh; overflow-y:auto;
         }
+
+        /* Pagination */
+        .pagination-btn {
+            @apply px-3 py-1.5 border rounded-md text-sm font-medium transition;
+        }
+        .pagination-btn.active {
+            @apply bg-orange-600 text-white border-orange-600;
+        }
+        .pagination-btn:not(.active) {
+            @apply bg-white border-gray-300 text-gray-700 hover:bg-gray-50;
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
@@ -144,8 +155,6 @@
                         </div>
                         <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
                             <span class="material-icons text-lg mr-2">person</span> My Profile</a>
-                        <!-- <a href="settings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                            <span class="material-icons text-lg mr-2">settings</span> Settings</a> -->
                         <hr class="my-1 border-gray-200">
                         <a href="../login.html" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">
                             <span class="material-icons text-lg mr-2">logout</span> Logout</a>
@@ -158,12 +167,17 @@
         <main class="flex-1 overflow-y-auto p-6 container mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
                 <h2 class="text-3xl font-bold text-orange-600 mb-4 md:mb-0 animate-fadeIn">Discount Management</h2>
-                <button id="add-discount-btn" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center transition">
-                    <span class="material-icons mr-2">add</span>Add New Discount
-                </button>
+                <div class="flex gap-2">
+                    <button id="add-discount-btn" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center transition">
+                        <span class="material-icons mr-2">add</span>Add New Discount
+                    </button>
+                    <button id="delete-selected-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg hidden">
+                        Delete Selected (<span id="selected-count">0</span>)
+                    </button>
+                </div>
             </div>
 
-            <!-- Stats Cards (unchanged) -->
+            <!-- Stats Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <div class="stat-card bg-white p-4 rounded-lg shadow-md border-l-4 border-orange-500 animate-fadeIn">
                     <div class="flex justify-between items-center">
@@ -195,17 +209,24 @@
                 </div>
             </div>
 
+            <!-- Search & Filter -->
+            <div class="bg-white p-4 rounded-lg shadow mb-6">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input type="text" id="search-discounts" placeholder="Search by name, email, code..."
+                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    <button id="filter-btn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center transition">
+                        <span class="material-icons mr-1">filter_list</span>Filter
+                    </button>
+                    <button id="clear-filters" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                        Clear Filters
+                    </button>
+                </div>
+            </div>
+
             <!-- Discounts Table -->
             <div class="bg-white rounded-lg shadow-md overflow-hidden animate-fadeIn">
-                <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div class="p-4 border-b border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-800">All Discounts</h3>
-                    <div class="flex items-center space-x-2 w-full sm:w-auto">
-                        <input type="text" id="search-discounts" placeholder="Search discounts..."
-                               class="flex-1 sm:flex-initial px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                        <button id="filter-btn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg flex items-center transition">
-                            <span class="material-icons mr-1">filter_list</span>Filter
-                        </button>
-                    </div>
                 </div>
 
                 <div class="table-container">
@@ -229,13 +250,14 @@
                     </table>
                 </div>
 
-                <div class="p-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-2">
+                <!-- PAGINATION -->
+                <div class="p-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <p class="text-sm text-gray-600" id="table-info">Showing 0 discounts</p>
-                    <div class="flex items-center space-x-2">
-                        <button id="prev-page" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>Previous</button>
-                        <span class="text-sm text-gray-700" id="page-info">Page 1 of 1</span>
-                        <button id="next-page" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>Next</button>
-                    </div>
+                    <nav class="flex items-center space-x-1">
+                        <button id="prev-page" class="pagination-btn" disabled>Previous</button>
+                        <div id="pagination-numbers" class="flex space-x-1"></div>
+                        <button id="next-page" class="pagination-btn" disabled>Next</button>
+                    </nav>
                 </div>
             </div>
         </main>
@@ -253,7 +275,7 @@
     </div>
 </div>
 
-<!-- Add/Edit Modal (unchanged) -->
+<!-- Add/Edit Modal -->
 <div id="discount-modal" class="modal-overlay hidden">
     <div class="modal-content p-6">
         <div class="flex justify-between items-center mb-4">
@@ -316,7 +338,7 @@
     </div>
 </div>
 
-<!-- Delete Modal (unchanged) -->
+<!-- Delete Modal -->
 <div id="delete-modal" class="modal-overlay hidden">
     <div class="modal-content p-6 max-w-md">
         <div class="flex items-center mb-4">
@@ -333,102 +355,126 @@
     </div>
 </div>
 
+<!-- Filter Modal -->
+<div id="filter-modal" class="modal-overlay hidden">
+    <div class="modal-content p-6 max-w-sm">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Filter Discounts</h3>
+            <button id="close-filter-modal" class="text-gray-500 hover:text-gray-700"><span class="material-icons">close</span></button>
+        </div>
+        <div class="space-y-3">
+            <label class="block">
+                <input type="radio" name="status-filter" value="all" checked class="mr-2"> All
+            </label>
+            <label class="block">
+                <input type="radio" name="status-filter" value="active" class="mr-2"> Active
+            </label>
+            <label class="block">
+                <input type="radio" name="status-filter" value="expired" class="mr-2"> Expired
+            </label>
+            <label class="block">
+                <input type="radio" name="status-filter" value="pending" class="mr-2"> Pending
+            </label>
+        </div>
+        <div class="flex justify-end mt-6">
+            <button id="apply-filter" class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">Apply Filter</button>
+        </div>
+    </div>
+</div>
+
 <script src="../assets/js/main.js"></script>
 <script src="../assets/js/discounts.js"></script>
- <!-- Inline Script (Sidebar, Profile, Logout) -->
-    <script>
-        // Profile Update
-        function updateHeaderProfile() {
-            const profile = JSON.parse(localStorage.getItem('adminProfile')) || { name: "Admin User", email: "admin@kunash.com", photo: "" };
-            const avatar = document.querySelector('header .w-10.h-10.bg-orange-500');
-            const nameEl = document.querySelector('header .text-right p.font-medium');
-            const emailEl = document.querySelector('header .text-right p.text-xs');
-            const ddName = document.querySelector('#profile-dropdown p.font-semibold');
-            const ddEmail = document.querySelector('#profile-dropdown p.text-xs');
 
-            if (!avatar) return;
-            let img = avatar.querySelector('img'), letter = avatar.querySelector('span');
-            if (profile.photo) {
-                if (!img) { img = document.createElement('img'); img.className = 'w-full h-full rounded-full object-cover'; avatar.innerHTML = ''; avatar.appendChild(img); }
-                img.src = profile.photo;
-            } else {
-                if (!letter) { letter = document.createElement('span'); letter.className = 'text-white font-bold text-lg'; avatar.innerHTML = ''; avatar.appendChild(letter); }
-                letter.textContent = profile.name.charAt(0).toUpperCase();
-            }
-            if (nameEl) nameEl.textContent = profile.name;
-            if (emailEl) emailEl.textContent = profile.email;
-            if (ddName) ddName.textContent = profile.name;
-            if (ddEmail) ddEmail.textContent = profile.email;
+<!-- Inline Sidebar & Profile Script -->
+<script>
+    function updateHeaderProfile() {
+        const profile = JSON.parse(localStorage.getItem('adminProfile')) || { name: "Admin User", email: "admin@kunash.com", photo: "" };
+        const avatar = document.querySelector('header .w-10.h-10.bg-orange-500');
+        const nameEl = document.querySelector('header .text-right p.font-medium');
+        const emailEl = document.querySelector('header .text-right p.text-xs');
+        const ddName = document.querySelector('#profile-dropdown p.font-semibold');
+        const ddEmail = document.querySelector('#profile-dropdown p.text-xs');
+
+        if (!avatar) return;
+        let img = avatar.querySelector('img'), letter = avatar.querySelector('span');
+        if (profile.photo) {
+            if (!img) { img = document.createElement('img'); img.className = 'w-full h-full rounded-full object-cover'; avatar.innerHTML = ''; avatar.appendChild(img); }
+            img.src = profile.photo;
+        } else {
+            if (!letter) { letter = document.createElement('span'); letter.className = 'text-white font-bold text-lg'; avatar.innerHTML = ''; avatar.appendChild(letter); }
+            letter.textContent = profile.name.charAt(0).toUpperCase();
         }
+        if (nameEl) nameEl.textContent = profile.name;
+        if (emailEl) emailEl.textContent = profile.email;
+        if (ddName) ddName.textContent = profile.name;
+        if (ddEmail) ddEmail.textContent = profile.email;
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateHeaderProfile();
-            const ddBtn = document.getElementById('profile-dropdown-btn');
-            const dd = document.getElementById('profile-dropdown');
-            if (ddBtn && dd) ddBtn.onclick = () => dd.classList.toggle('hidden');
-        });
+    document.addEventListener('DOMContentLoaded', () => {
+        updateHeaderProfile();
+        const ddBtn = document.getElementById('profile-dropdown-btn');
+        const dd = document.getElementById('profile-dropdown');
+        if (ddBtn && dd) ddBtn.onclick = () => dd.classList.toggle('hidden');
+    });
 
-        window.addEventListener('storage', e => { if (e.key === 'adminProfile') updateHeaderProfile(); });
-        window.addEventListener('profileUpdated', updateHeaderProfile);
+    window.addEventListener('storage', e => { if (e.key === 'adminProfile') updateHeaderProfile(); });
+    window.addEventListener('profileUpdated', updateHeaderProfile);
 
-        // Sidebar Toggle
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.querySelector('.main-content');
-        const toggleBtn = document.getElementById('toggle-btn');
-        const toggleIcon = toggleBtn.querySelector('.material-icons');
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        let collapsed = false;
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const toggleBtn = document.getElementById('toggle-btn');
+    const toggleIcon = toggleBtn.querySelector('.material-icons');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    let collapsed = false;
 
-        toggleBtn.addEventListener('click', () => {
-            collapsed = !collapsed;
-            if (collapsed) {
-                sidebar.classList.add('sidebar-collapsed');
-                mainContent.classList.remove('ml-64'); mainContent.classList.add('ml-20');
-                toggleIcon.textContent = 'chevron_right';
-            } else {
-                sidebar.classList.remove('sidebar-collapsed');
-                mainContent.classList.remove('ml-20'); mainContent.classList.add('ml-64');
-                toggleIcon.textContent = 'chevron_left';
-            }
-        });
-
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('-translate-x-full'));
+    toggleBtn.addEventListener('click', () => {
+        collapsed = !collapsed;
+        if (collapsed) {
+            sidebar.classList.add('sidebar-collapsed');
+            mainContent.classList.remove('ml-64'); mainContent.classList.add('ml-20');
+            toggleIcon.textContent = 'chevron_right';
+        } else {
+            sidebar.classList.remove('sidebar-collapsed');
+            mainContent.classList.remove('ml-20'); mainContent.classList.add('ml-64');
+            toggleIcon.textContent = 'chevron_left';
         }
+    });
 
-        document.addEventListener('click', e => {
-            if (window.innerWidth < 1024) {
-                const inside = sidebar.contains(e.target) || (sidebarToggle && sidebarToggle.contains(e.target));
-                if (!inside && !sidebar.classList.contains('-translate-x-full')) {
-                    sidebar.classList.add('-translate-x-full');
-                }
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('-translate-x-full'));
+    }
+
+    document.addEventListener('click', e => {
+        if (window.innerWidth < 1024) {
+            const inside = sidebar.contains(e.target) || (sidebarToggle && sidebarToggle.contains(e.target));
+            if (!inside && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
             }
-        });
+        }
+    });
 
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 1024) {
-                sidebar.classList.remove('-translate-x-full');
-                if (!collapsed) mainContent.classList.add('ml-64');
-            } else {
-                mainContent.classList.remove('ml-64', 'ml-20');
-            }
-        });
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+            sidebar.classList.remove('-translate-x-full');
+            if (!collapsed) mainContent.classList.add('ml-64');
+        } else {
+            mainContent.classList.remove('ml-64', 'ml-20');
+        }
+    });
 
-        // Close dropdown on outside click
-        document.addEventListener('click', e => {
-            const dd = document.getElementById('profile-dropdown');
-            const btn = document.getElementById('profile-dropdown-btn');
-            if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) dd.classList.add('hidden');
-        });
+    document.addEventListener('click', e => {
+        const dd = document.getElementById('profile-dropdown');
+        const btn = document.getElementById('profile-dropdown-btn');
+        if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) dd.classList.add('hidden');
+    });
 
-        // Logout
-        document.getElementById('logout-btn')?.addEventListener('click', () => {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('adminAuth');
-                sessionStorage.clear();
-                window.location.href = '../login.html';
-            }
-        });
-    </script>
+    document.getElementById('logout-btn')?.addEventListener('click', () => {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('adminAuth');
+            sessionStorage.clear();
+            window.location.href = '../login.html';
+        }
+    });
+</script>
 </body>
 </html>

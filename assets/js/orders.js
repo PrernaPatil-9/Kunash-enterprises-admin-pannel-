@@ -6,7 +6,7 @@ class OrderManager {
         this.orders = [];
         this.filteredOrders = [];
         this.currentPage = 1;
-        this.itemsPerPage = 10;
+        this.itemsPerPage = 10;  // ← PAGINATION: 10 per page
         this.selectedOrders = new Set();
 
         this.init();
@@ -102,7 +102,7 @@ class OrderManager {
 
     /* ---------------------------------------------------------- */
     setupEventListeners() {
-        // pagination
+        // Pagination
         document.getElementById('prev-page').addEventListener('click', () => {
             if (this.currentPage > 1) { this.currentPage--; this.renderOrders(); }
         });
@@ -111,7 +111,7 @@ class OrderManager {
             if (this.currentPage < pages) { this.currentPage++; this.renderOrders(); }
         });
 
-        // filters
+        // Filters
         const apply = () => this.applyFilters();
         document.getElementById('search-input').addEventListener('input', apply);
         document.getElementById('status-filter').addEventListener('change', apply);
@@ -128,7 +128,7 @@ class OrderManager {
             this.applyFilters();
         });
 
-        // bulk
+        // Bulk Actions
         document.getElementById('select-all').addEventListener('change', e => {
             document.querySelectorAll('.order-checkbox').forEach(cb => {
                 cb.checked = e.target.checked;
@@ -138,19 +138,19 @@ class OrderManager {
         });
         document.getElementById('bulk-delete-btn').addEventListener('click', () => this.bulkDeleteOrders());
 
-        // modal close
+        // Modal
         document.getElementById('close-modal').addEventListener('click', () => this.closeModal());
         document.getElementById('close-modal-btn').addEventListener('click', () => this.closeModal());
         document.getElementById('save-changes').addEventListener('click', () => this.saveOrderChanges());
         document.getElementById('download-invoice').addEventListener('click', () => this.generateInvoice());
 
-        // invoice modal
+        // Invoice Modal
         document.getElementById('close-invoice-modal').addEventListener('click', () => this.closeInvoiceModal());
         document.getElementById('close-invoice').addEventListener('click', () => this.closeInvoiceModal());
         document.getElementById('print-invoice').addEventListener('click', () => this.printInvoice());
         document.getElementById('download-pdf').addEventListener('click', () => this.downloadInvoicePDF());
 
-        // click outside modal
+        // Click outside modal
         window.addEventListener('click', e => {
             const oModal = document.getElementById('order-details-modal');
             const iModal = document.getElementById('invoice-modal');
@@ -222,7 +222,6 @@ class OrderManager {
                 <td class="px-6 py-4"><span class="${payClass}">${order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}</span></td>
                 <td class="px-6 py-4"><span class="${statusClass}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span></td>
                 <td class="px-6 py-4 text-sm space-x-2">
-                    <!-- VIEW BUTTON REMOVED -->
                     <button class="text-blue-600 hover:text-blue-800 invoice-order" data-id="${order.id}" title="Invoice">
                         <i class="fas fa-file-invoice"></i>
                     </button>
@@ -234,7 +233,7 @@ class OrderManager {
             tbody.appendChild(row);
         });
 
-        // ---- attach row-level listeners (only invoice and delete) ----
+        // Attach action listeners
         document.querySelectorAll('.invoice-order').forEach(btn => {
             btn.addEventListener('click', e => {
                 const id = e.currentTarget.dataset.id;
@@ -312,20 +311,17 @@ class OrderManager {
         const o = this.orders.find(x => x.id === orderId);
         if (!o) return;
 
-        // customer
         document.getElementById('customer-name').textContent = o.customer.name;
         document.getElementById('customer-email').textContent = o.customer.email;
         document.getElementById('customer-phone').textContent = o.customer.phone;
         document.getElementById('customer-address').textContent = o.customer.address;
         document.getElementById('customer-location').textContent = `${o.customer.city}, ${o.customer.state} - ${o.customer.pincode}`;
 
-        // order
         document.getElementById('modal-order-id').textContent = o.id;
         document.getElementById('modal-order-date').textContent = new Date(o.date).toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
         document.getElementById('modal-delivery-date').textContent = new Date(o.expectedDelivery).toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
         document.getElementById('modal-order-status').value = o.status;
 
-        // items
         const itemsBody = document.getElementById('modal-items-body');
         itemsBody.innerHTML = '';
         o.items.forEach(it => {
@@ -338,18 +334,15 @@ class OrderManager {
         });
         document.getElementById('modal-total-amount').textContent = `₹${o.total}`;
 
-        // payment
         document.getElementById('modal-payment-method').textContent = o.paymentMethod;
         document.getElementById('modal-transaction-id').textContent = o.transactionId;
         document.getElementById('modal-payment-status').value = o.paymentStatus;
 
-        // delivery
         document.getElementById('modal-delivery-mode').textContent = o.deliveryMode;
         document.getElementById('modal-tracking-id').textContent = o.trackingId || '—';
         document.getElementById('modal-actual-delivery-date').textContent = o.actualDelivery ?
             new Date(o.actualDelivery).toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' }) : 'Not delivered';
 
-        // notes
         document.getElementById('admin-notes').value = o.adminNotes || '';
         document.getElementById('save-changes').dataset.orderId = orderId;
 

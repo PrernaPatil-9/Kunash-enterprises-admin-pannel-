@@ -180,11 +180,21 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     // ---------- RENDER ----------
     const pageNames = { home:'Home Page', products:'Products', services:'Services', about:'About Us', contact:'Contact Us' };
-    const renderBanners = () => {
+
+    // Pagination State
+    let currentPage = 1;
+    const itemsPerPage = 10;
+
+    const renderBanners = (page = currentPage) => {
         const banners = getBanners();
         const tbody = document.querySelector('#banners-table tbody');
         tbody.innerHTML = '';
-        banners.forEach(b => {
+
+        const start = (page - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const paginatedBanners = banners.slice(start, end);
+
+        paginatedBanners.forEach(b => {
             const tr = document.createElement('tr');
             tr.className = b.active ? 'active-banner' : 'inactive-banner';
             tr.innerHTML = `
@@ -210,8 +220,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>`;
             tbody.appendChild(tr);
         });
+
         updateStats();
+        renderPagination(banners.length, page);
     };
+
+    const renderPagination = (totalItems, page) => {
+        const container = document.getElementById('pagination-container');
+        container.innerHTML = '';
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        if (totalPages <= 1) return;
+
+        const pagination = document.createElement('div');
+        pagination.className = 'pagination';
+
+        // Previous
+        const prev = document.createElement('button');
+        prev.textContent = 'Previous';
+        prev.disabled = page === 1;
+        prev.onclick = () => { currentPage = page - 1; renderBanners(currentPage); };
+        pagination.appendChild(prev);
+
+        // Page numbers (smart: show 1,2,...,current-1,current,current+1,...,last)
+        const showPage = (num) => {
+            const btn = document.createElement('button');
+            btn.textContent = num;
+            btn.className = num === page ? 'active' : '';
+            btn.onclick = () => { currentPage = num; renderBanners(num); };
+            pagination.appendChild(btn);
+        };
+
+        if (totalPages <= 7) {
+            for (let i = 1; i <= totalPages; i++) showPage(i);
+        } else {
+            showPage(1);
+            if (page > 4) pagination.appendChild(document.createTextNode('...'));
+            const start = Math.max(2, page - 1);
+            const end = Math.min(totalPages - 1, page + 1);
+            for (let i = start; i <= end; i++) showPage(i);
+            if (page < totalPages - 3) pagination.appendChild(document.createTextNode('...'));
+            showPage(totalPages);
+        }
+
+        // Next
+        const next = document.createElement('button');
+        next.textContent = 'Next';
+        next.disabled = page === totalPages;
+        next.onclick = () => { currentPage = page + 1; renderBanners(currentPage); };
+        pagination.appendChild(next);
+
+        container.appendChild(pagination);
+    };
+
     const renderBannerCards = () => {
         const container = document.getElementById('card-view');
         container.innerHTML = '';
@@ -279,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
         arr.push({ id:newId, title, page, images, link:link||'#', active, created:new Date().toISOString().split('T')[0] });
         saveBanners(arr);
         addModal.classList.add('hidden');
+        currentPage = 1; // Reset to first page
         renderBanners();
     });
     // ---------- EDIT FORM ----------
@@ -332,7 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // ---------- INIT ----------
     seedBanners();
-    // FIX: Defer rendering to ensure DOM is ready
     setTimeout(() => {
         renderBanners();
         updateStats();

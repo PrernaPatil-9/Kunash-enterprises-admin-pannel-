@@ -39,7 +39,7 @@
         .payment-status-failed   { @apply bg-red-100    text-red-800; }
         .payment-status-refunded { @apply bg-indigo-100 text-indigo-800; }
 
-        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; align-items:center; justify-content:center; }
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:50; align-items:center; justify-content:center; }
         .modal-content { @apply bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6; }
 
         .sidebar-collapsed { width:5rem !important; }
@@ -55,7 +55,7 @@
             .filter-grid{grid-template-columns:2fr 1fr 1fr 1fr 1fr;}
             .filter-actions{margin-top:0;justify-content:flex-start;}
         }
-        @media (max-width:767px){.filter-actions{justify-content:center;}}
+          @media (max-width:767px){.filter-actions{justify-content:center;}}
 
         .invoice-container{width:210mm;min-height:297mm;padding:20mm;margin:10mm auto;background:white;box-shadow:0 0 10px rgba(0,0,0,0.1);font-family:Arial,sans-serif;}
         .invoice-header{border-bottom:2px solid #f59e0b;padding-bottom:20px;margin-bottom:30px;}
@@ -412,100 +412,101 @@
 <!-- ==================== SCRIPTS ==================== -->
 <script src="../assets/js/profile-sidebar.js"></script>
 <script src="../assets/js/orders.js"></script>
+
 <!-- Inline Script (Sidebar, Profile, Logout) -->
-    <script>
-        // Profile Update
-        function updateHeaderProfile() {
-            const profile = JSON.parse(localStorage.getItem('adminProfile')) || { name: "Admin User", email: "admin@kunash.com", photo: "" };
-            const avatar = document.querySelector('header .w-10.h-10.bg-orange-500');
-            const nameEl = document.querySelector('header .text-right p.font-medium');
-            const emailEl = document.querySelector('header .text-right p.text-xs');
-            const ddName = document.querySelector('#profile-dropdown p.font-semibold');
-            const ddEmail = document.querySelector('#profile-dropdown p.text-xs');
+<script>
+    // Profile Update
+    function updateHeaderProfile() {
+        const profile = JSON.parse(localStorage.getItem('adminProfile')) || { name: "Admin User", email: "admin@kunash.com", photo: "" };
+        const avatar = document.querySelector('header .w-10.h-10.bg-orange-500');
+        const nameEl = document.querySelector('header .text-right p.font-medium');
+        const emailEl = document.querySelector('header .text-right p.text-xs');
+        const ddName = document.querySelector('#profile-dropdown p.font-semibold');
+        const ddEmail = document.querySelector('#profile-dropdown p.text-xs');
 
-            if (!avatar) return;
-            let img = avatar.querySelector('img'), letter = avatar.querySelector('span');
-            if (profile.photo) {
-                if (!img) { img = document.createElement('img'); img.className = 'w-full h-full rounded-full object-cover'; avatar.innerHTML = ''; avatar.appendChild(img); }
-                img.src = profile.photo;
-            } else {
-                if (!letter) { letter = document.createElement('span'); letter.className = 'text-white font-bold text-lg'; avatar.innerHTML = ''; avatar.appendChild(letter); }
-                letter.textContent = profile.name.charAt(0).toUpperCase();
-            }
-            if (nameEl) nameEl.textContent = profile.name;
-            if (emailEl) emailEl.textContent = profile.email;
-            if (ddName) ddName.textContent = profile.name;
-            if (ddEmail) ddEmail.textContent = profile.email;
+        if (!avatar) return;
+        let img = avatar.querySelector('img'), letter = avatar.querySelector('span');
+        if (profile.photo) {
+            if (!img) { img = document.createElement('img'); img.className = 'w-full h-full rounded-full object-cover'; avatar.innerHTML = ''; avatar.appendChild(img); }
+            img.src = profile.photo;
+        } else {
+            if (!letter) { letter = document.createElement('span'); letter.className = 'text-white font-bold text-lg'; avatar.innerHTML = ''; avatar.appendChild(letter); }
+            letter.textContent = profile.name.charAt(0).toUpperCase();
         }
+        if (nameEl) nameEl.textContent = profile.name;
+        if (emailEl) emailEl.textContent = profile.email;
+        if (ddName) ddName.textContent = profile.name;
+        if (ddEmail) ddEmail.textContent = profile.email;
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateHeaderProfile();
-            const ddBtn = document.getElementById('profile-dropdown-btn');
-            const dd = document.getElementById('profile-dropdown');
-            if (ddBtn && dd) ddBtn.onclick = () => dd.classList.toggle('hidden');
-        });
+    document.addEventListener('DOMContentLoaded', () => {
+        updateHeaderProfile();
+        const ddBtn = document.getElementById('profile-dropdown-btn');
+        const dd = document.getElementById('profile-dropdown');
+        if (ddBtn && dd) ddBtn.onclick = () => dd.classList.toggle('hidden');
+    });
 
-        window.addEventListener('storage', e => { if (e.key === 'adminProfile') updateHeaderProfile(); });
-        window.addEventListener('profileUpdated', updateHeaderProfile);
+    window.addEventListener('storage', e => { if (e.key === 'adminProfile') updateHeaderProfile(); });
+    window.addEventListener('profileUpdated', updateHeaderProfile);
 
-        // Sidebar Toggle
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.querySelector('.main-content');
-        const toggleBtn = document.getElementById('toggle-btn');
-        const toggleIcon = toggleBtn.querySelector('.material-icons');
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        let collapsed = false;
+    // Sidebar Toggle
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const toggleBtn = document.getElementById('toggle-btn');
+    const toggleIcon = toggleBtn.querySelector('.material-icons');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    let collapsed = false;
 
-        toggleBtn.addEventListener('click', () => {
-            collapsed = !collapsed;
-            if (collapsed) {
-                sidebar.classList.add('sidebar-collapsed');
-                mainContent.classList.remove('ml-64'); mainContent.classList.add('ml-20');
-                toggleIcon.textContent = 'chevron_right';
-            } else {
-                sidebar.classList.remove('sidebar-collapsed');
-                mainContent.classList.remove('ml-20'); mainContent.classList.add('ml-64');
-                toggleIcon.textContent = 'chevron_left';
-            }
-        });
-
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('-translate-x-full'));
+    toggleBtn.addEventListener('click', () => {
+        collapsed = !collapsed;
+        if (collapsed) {
+            sidebar.classList.add('sidebar-collapsed');
+            mainContent.classList.remove('ml-64'); mainContent.classList.add('ml-20');
+            toggleIcon.textContent = 'chevron_right';
+        } else {
+            sidebar.classList.remove('sidebar-collapsed');
+            mainContent.classList.remove('ml-20'); mainContent.classList.add('ml-64');
+            toggleIcon.textContent = 'chevron_left';
         }
+    });
 
-        document.addEventListener('click', e => {
-            if (window.innerWidth < 1024) {
-                const inside = sidebar.contains(e.target) || (sidebarToggle && sidebarToggle.contains(e.target));
-                if (!inside && !sidebar.classList.contains('-translate-x-full')) {
-                    sidebar.classList.add('-translate-x-full');
-                }
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('-translate-x-full'));
+    }
+
+    document.addEventListener('click', e => {
+        if (window.innerWidth < 1024) {
+            const inside = sidebar.contains(e.target) || (sidebarToggle && sidebarToggle.contains(e.target));
+            if (!inside && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
             }
-        });
+        }
+    });
 
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 1024) {
-                sidebar.classList.remove('-translate-x-full');
-                if (!collapsed) mainContent.classList.add('ml-64');
-            } else {
-                mainContent.classList.remove('ml-64', 'ml-20');
-            }
-        });
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+            sidebar.classList.remove('-translate-x-full');
+            if (!collapsed) mainContent.classList.add('ml-64');
+        } else {
+            mainContent.classList.remove('ml-64', 'ml-20');
+        }
+    });
 
-        // Close dropdown on outside click
-        document.addEventListener('click', e => {
-            const dd = document.getElementById('profile-dropdown');
-            const btn = document.getElementById('profile-dropdown-btn');
-            if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) dd.classList.add('hidden');
-        });
+    // Close dropdown on outside click
+    document.addEventListener('click', e => {
+        const dd = document.getElementById('profile-dropdown');
+        const btn = document.getElementById('profile-dropdown-btn');
+        if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) dd.classList.add('hidden');
+    });
 
-        // Logout
-        document.getElementById('logout-btn')?.addEventListener('click', () => {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('adminAuth');
-                sessionStorage.clear();
-                window.location.href = '../login.html';
-            }
-        });
-    </script>
+    // Logout
+    document.getElementById('logout-btn')?.addEventListener('click', () => {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('adminAuth');
+            sessionStorage.clear();
+            window.location.href = '../login.html';
+        }
+    });
+</script>
 </body>
 </html>

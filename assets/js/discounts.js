@@ -1,63 +1,48 @@
 /* ==============================================================
-   Discount Management – Updated
-   • Fixed column alignment with table-layout: fixed
-   • Added View button + modal
-   • Vertical scroll with sticky header
-   • Actions column centered
+   Discount Management – Full Working Version
+   • Bulk Delete
+   • Filter Modal (Status)
+   • Pagination (10 per page)
+   • Search
    ============================================================== */
 
 let discounts = JSON.parse(localStorage.getItem('discounts')) || [
-    {
-        id: 1, customerName: "Rahul Sharma", email: "rahul.sharma@example.com",
-        mobileNumber: "9876543210", couponCode: "WELCOME10", discountValue: 10,
-        discountType: "percentage", validUntil: "2025-12-31", status: "active"
-    },
-    {
-        id: 2, customerName: "Priya Patel", email: "priya.patel@example.com",
-        mobileNumber: "8765432109", couponCode: "SUMMER25", discountValue: 25,
-        discountType: "percentage", validUntil: "2025-09-30", status: "active"
-    },
-    {
-        id: 3, customerName: "Amit Kumar", email: "amit.kumar@example.com",
-        mobileNumber: "7654321098", couponCode: "FLAT50", discountValue: 50,
-        discountType: "fixed", validUntil: "2025-08-15", status: "expired"
-    },
-    {
-        id: 4, customerName: "Neha Gupta", email: "neha.gupta@example.com",
-        mobileNumber: "6543210987", couponCode: "NEWUSER15", discountValue: 15,
-        discountType: "percentage", validUntil: "2025-10-20", status: "pending"
-    },
-    {
-        id: 5, customerName: "Vikram Singh", email: "vikram.singh@example.com",
-        mobileNumber: "5432109876", couponCode: "FESTIVE20", discountValue: 20,
-        discountType: "percentage", validUntil: "2025-11-10", status: "active"
-    }
+    { id: 1, customerName: "Rahul Sharma", email: "rahul.sharma@example.com", mobileNumber: "9876543210", couponCode: "WELCOME10", discountValue: 10, discountType: "percentage", validUntil: "2025-12-31", status: "active" },
+    { id: 2, customerName: "Priya Patel", email: "priya.patel@example.com", mobileNumber: "8765432109", couponCode: "SUMMER25", discountValue: 25, discountType: "percentage", validUntil: "2025-09-30", status: "active" },
+    { id: 3, customerName: "Amit Kumar", email: "amit.kumar@example.com", mobileNumber: "7654321098", couponCode: "FLAT50", discountValue: 50, discountType: "fixed", validUntil: "2025-08-15", status: "expired" },
+    { id: 4, customerName: "Neha Gupta", email: "neha.gupta@example.com", mobileNumber: "6543210987", couponCode: "NEWUSER15", discountValue: 15, discountType: "percentage", validUntil: "2025-10-20", status: "pending" },
+    { id: 5, customerName: "Vikram Singh", email: "vikram.singh@example.com", mobileNumber: "5432109876", couponCode: "FESTIVE20", discountValue: 20, discountType: "percentage", validUntil: "2025-11-10", status: "active" }
 ];
 
-/* ---------- Pagination & filtering ---------- */
+/* ---------- State ---------- */
 let currentPage = 1;
 const itemsPerPage = 10;
 let filteredDiscounts = [...discounts];
+let selectedIds = new Set();
+let currentStatusFilter = 'all';
 
 /* ---------- DOM Elements ---------- */
-const tbody          = document.getElementById('discounts-table-body');
-const totalEl        = document.getElementById('total-discounts');
-const activeEl       = document.getElementById('active-discounts');
-const expiredEl      = document.getElementById('expired-discounts');
-const pendingEl      = document.getElementById('pending-discounts');
-const tableInfoEl    = document.getElementById('table-info');
-const pageInfoEl     = document.getElementById('page-info');
-const prevBtn        = document.getElementById('prev-page');
-const nextBtn        = document.getElementById('next-page');
-const searchInput    = document.getElementById('search-discounts');
-const addBtn         = document.getElementById('add-discount-btn');
-const modal          = document.getElementById('discount-modal');
-const viewModal      = document.getElementById('view-modal');
-const deleteModal    = document.getElementById('delete-modal');
-const form           = document.getElementById('discount-form');
-const modalTitle     = document.getElementById('modal-title');
-const idInput        = document.getElementById('discount-id');
-const selectAllChk   = document.getElementById('select-all');
+const tbody = document.getElementById('discounts-table-body');
+const totalEl = document.getElementById('total-discounts');
+const activeEl = document.getElementById('active-discounts');
+const expiredEl = document.getElementById('expired-discounts');
+const pendingEl = document.getElementById('pending-discounts');
+const tableInfoEl = document.getElementById('table-info');
+const prevBtn = document.getElementById('prev-page');
+const nextBtn = document.getElementById('next-page');
+const paginationContainer = document.getElementById('pagination-numbers');
+const searchInput = document.getElementById('search-discounts');
+const addBtn = document.getElementById('add-discount-btn');
+const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+const selectedCountEl = document.getElementById('selected-count');
+const modal = document.getElementById('discount-modal');
+const viewModal = document.getElementById('view-modal');
+const deleteModal = document.getElementById('delete-modal');
+const filterModal = document.getElementById('filter-modal');
+const form = document.getElementById('discount-form');
+const modalTitle = document.getElementById('modal-title');
+const idInput = document.getElementById('discount-id');
+const selectAllChk = document.getElementById('select-all');
 
 /* ---------- Init ---------- */
 document.addEventListener('DOMContentLoaded', () => {
@@ -69,32 +54,41 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ---------- Event Listeners ---------- */
 function setupListeners() {
     addBtn.addEventListener('click', openAddModal);
+    deleteSelectedBtn.addEventListener('click', bulkDelete);
+
     document.getElementById('close-modal').addEventListener('click', closeModal);
     document.getElementById('cancel-discount').addEventListener('click', closeModal);
     document.getElementById('close-view').addEventListener('click', closeViewModal);
     document.getElementById('cancel-delete').addEventListener('click', closeDeleteModal);
     document.getElementById('confirm-delete').addEventListener('click', confirmDelete);
+    document.getElementById('filter-btn').addEventListener('click', () => filterModal.classList.remove('hidden'));
+    document.getElementById('close-filter-modal').addEventListener('click', () => filterModal.classList.add('hidden'));
+    document.getElementById('apply-filter').addEventListener('click', applyStatusFilter);
+    document.getElementById('clear-filters').addEventListener('click', clearAllFilters);
+
     form.addEventListener('submit', handleSubmit);
     searchInput.addEventListener('input', debounce(handleSearch, 300));
     prevBtn.addEventListener('click', () => changePage(-1));
     nextBtn.addEventListener('click', () => changePage(1));
     selectAllChk.addEventListener('change', toggleSelectAll);
+
     window.addEventListener('click', e => {
         if (e.target === modal) closeModal();
         if (e.target === viewModal) closeViewModal();
         if (e.target === deleteModal) closeDeleteModal();
+        if (e.target === filterModal) filterModal.classList.add('hidden');
     });
 }
 
 /* ---------- Stats ---------- */
 function updateStats() {
-    const total   = discounts.length;
-    const active  = discounts.filter(d => d.status === 'active').length;
+    const total = discounts.length;
+    const active = discounts.filter(d => d.status === 'active').length;
     const expired = discounts.filter(d => d.status === 'expired').length;
     const pending = discounts.filter(d => d.status === 'pending').length;
 
-    totalEl.textContent   = total;
-    activeEl.textContent  = active;
+    totalEl.textContent = total;
+    activeEl.textContent = active;
     expiredEl.textContent = expired;
     pendingEl.textContent = pending;
 }
@@ -102,7 +96,7 @@ function updateStats() {
 /* ---------- Table Rendering ---------- */
 function renderTable() {
     const start = (currentPage - 1) * itemsPerPage;
-    const end   = start + itemsPerPage;
+    const end = start + itemsPerPage;
     const pageItems = filteredDiscounts.slice(start, end);
 
     tbody.innerHTML = '';
@@ -111,9 +105,10 @@ function renderTable() {
         tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-gray-500">No discounts found</td></tr>`;
     } else {
         pageItems.forEach(d => {
+            const checked = selectedIds.has(d.id) ? 'checked' : '';
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td class="text-center"><input type="checkbox" class="row-check" data-id="${d.id}"></td>
+                <td class="text-center"><input type="checkbox" class="row-check" data-id="${d.id}" ${checked}></td>
                 <td>${escapeHtml(d.customerName)}</td>
                 <td>${escapeHtml(d.email)}</td>
                 <td>${escapeHtml(d.mobileNumber)}</td>
@@ -138,30 +133,141 @@ function renderTable() {
             tbody.appendChild(row);
         });
 
-        // Attach handlers
-        tbody.querySelectorAll('.view-btn').forEach(btn => btn.addEventListener('click', e => {
-            const id = Number(e.currentTarget.dataset.id);
-            openViewModal(id);
-        }));
-        tbody.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', e => {
-            const id = Number(e.currentTarget.dataset.id);
-            openEditModal(id);
-        }));
-        tbody.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', e => {
-            const id = Number(e.currentTarget.dataset.id);
-            openDeleteModal(id);
-        }));
+        tbody.querySelectorAll('.row-check').forEach(chk => {
+            chk.addEventListener('change', () => {
+                const id = Number(chk.dataset.id);
+                chk.checked ? selectedIds.add(id) : selectedIds.delete(id);
+                updateBulkDeleteButton();
+                syncSelectAllCheckbox();
+            });
+        });
+
+        tbody.querySelectorAll('.view-btn').forEach(btn => btn.addEventListener('click', e => openViewModal(Number(e.currentTarget.dataset.id))));
+        tbody.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', e => openEditModal(Number(e.currentTarget.dataset.id))));
+        tbody.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', e => openDeleteModal(Number(e.currentTarget.dataset.id))));
     }
 
     updatePagination();
+    updateBulkDeleteButton();
     syncSelectAllCheckbox();
 }
 
-/* ---------- View Modal ---------- */
+/* ---------- Bulk Delete ---------- */
+function updateBulkDeleteButton() {
+    if (selectedIds.size > 0) {
+        deleteSelectedBtn.classList.remove('hidden');
+        selectedCountEl.textContent = selectedIds.size;
+    } else {
+        deleteSelectedBtn.classList.add('hidden');
+    }
+}
+
+function bulkDelete() {
+    if (selectedIds.size === 0) return;
+    if (confirm(`Delete ${selectedIds.size} selected discount(s)?`)) {
+        discounts = discounts.filter(d => !selectedIds.has(d.id));
+        localStorage.setItem('discounts', JSON.stringify(discounts));
+        selectedIds.clear();
+        applyFilters();
+        showNotify('Selected discounts deleted!', 'success');
+    }
+}
+
+/* ---------- Pagination ---------- */
+function updatePagination() {
+    const totalPages = Math.max(1, Math.ceil(filteredDiscounts.length / itemsPerPage));
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, filteredDiscounts.length);
+
+    tableInfoEl.textContent = `Showing ${startItem} to ${endItem} of ${filteredDiscounts.length} discounts`;
+
+    paginationContainer.innerHTML = '';
+    const maxVisible = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    if (endPage - startPage + 1 < maxVisible) startPage = Math.max(1, endPage - maxVisible + 1);
+
+    for (let i = startPage; i <= endPage; i++) {
+        const btn = document.createElement('button');
+        btn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+        btn.textContent = i;
+        btn.addEventListener('click', () => {
+            currentPage = i;
+            renderTable();
+        });
+        paginationContainer.appendChild(btn);
+    }
+
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+}
+
+function changePage(delta) {
+    const newPage = currentPage + delta;
+    const maxPage = Math.ceil(filteredDiscounts.length / itemsPerPage);
+    if (newPage >= 1 && newPage <= maxPage) {
+        currentPage = newPage;
+        renderTable();
+    }
+}
+
+/* ---------- Search & Filter ---------- */
+function handleSearch() {
+    applyFilters();
+}
+
+function applyStatusFilter() {
+    const selected = document.querySelector('input[name="status-filter"]:checked');
+    currentStatusFilter = selected ? selected.value : 'all';
+    filterModal.classList.add('hidden');
+    applyFilters();
+}
+
+function clearAllFilters() {
+    searchInput.value = '';
+    currentStatusFilter = 'all';
+    document.querySelector('input[name="status-filter"][value="all"]').checked = true;
+    applyFilters();
+}
+
+function applyFilters() {
+    const term = searchInput.value.trim().toLowerCase();
+    filteredDiscounts = discounts.filter(d => {
+        const matchesSearch = !term || 
+            d.customerName.toLowerCase().includes(term) ||
+            d.email.toLowerCase().includes(term) ||
+            d.couponCode.toLowerCase().includes(term) ||
+            d.mobileNumber.includes(term);
+        const matchesStatus = currentStatusFilter === 'all' || d.status === currentStatusFilter;
+        return matchesSearch && matchesStatus;
+    });
+    currentPage = 1;
+    selectedIds.clear();
+    renderTable();
+}
+
+/* ---------- Select All ---------- */
+function toggleSelectAll() {
+    const checked = selectAllChk.checked;
+    document.querySelectorAll('.row-check').forEach(chk => {
+        const id = Number(chk.dataset.id);
+        chk.checked = checked;
+        checked ? selectedIds.add(id) : selectedIds.delete(id);
+    });
+    updateBulkDeleteButton();
+}
+
+function syncSelectAllCheckbox() {
+    const all = document.querySelectorAll('.row-check');
+    const checked = document.querySelectorAll('.row-check:checked');
+    selectAllChk.checked = all.length > 0 && all.length === checked.length;
+    selectAllChk.indeterminate = checked.length > 0 && checked.length < all.length;
+}
+
+/* ---------- Modals ---------- */
 function openViewModal(id) {
     const d = discounts.find(x => x.id === id);
     if (!d) return;
-
     const content = document.getElementById('view-content');
     content.innerHTML = `
         <div><strong>Customer:</strong> ${escapeHtml(d.customerName)}</div>
@@ -174,65 +280,13 @@ function openViewModal(id) {
     `;
     viewModal.classList.remove('hidden');
 }
-function closeViewModal() {
-    viewModal.classList.add('hidden');
-}
+function closeViewModal() { viewModal.classList.add('hidden'); }
 
-/* ---------- Other Functions (unchanged) ---------- */
-function updatePagination() {
-    const totalPages = Math.max(1, Math.ceil(filteredDiscounts.length / itemsPerPage));
-    const startItem  = (currentPage - 1) * itemsPerPage + 1;
-    const endItem    = Math.min(currentPage * itemsPerPage, filteredDiscounts.length);
-
-    tableInfoEl.textContent = `Showing ${startItem} to ${endItem} of ${filteredDiscounts.length} discounts`;
-    pageInfoEl.textContent  = `Page ${currentPage} of ${totalPages}`;
-    prevBtn.disabled = currentPage === 1;
-    nextBtn.disabled = currentPage === totalPages;
-}
-function changePage(delta) {
-    const newPage = currentPage + delta;
-    const maxPage = Math.ceil(filteredDiscounts.length / itemsPerPage);
-    if (newPage >= 1 && newPage <= maxPage) {
-        currentPage = newPage;
-        renderTable();
-    }
-}
-function handleSearch() {
-    const term = searchInput.value.trim().toLowerCase();
-    filteredDiscounts = term === ''
-        ? [...discounts]
-        : discounts.filter(d =>
-            d.customerName.toLowerCase().includes(term) ||
-            d.email.toLowerCase().includes(term) ||
-            d.couponCode.toLowerCase().includes(term) ||
-            d.mobileNumber.includes(term)
-        );
-    currentPage = 1;
-    renderTable();
-}
-function debounce(fn, wait) {
-    let timer;
-    return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn.apply(this, args), wait);
-    };
-}
-function toggleSelectAll() {
-    const checked = selectAllChk.checked;
-    document.querySelectorAll('.row-check').forEach(chk => chk.checked = checked);
-}
-function syncSelectAllCheckbox() {
-    const all = document.querySelectorAll('.row-check');
-    const checked = document.querySelectorAll('.row-check:checked');
-    selectAllChk.checked = all.length > 0 && all.length === checked.length;
-    selectAllChk.indeterminate = checked.length > 0 && checked.length < all.length;
-}
 function openAddModal() {
     modalTitle.textContent = 'Add New Discount';
     form.reset();
     idInput.value = '';
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
     document.getElementById('valid-until').value = tomorrow.toISOString().split('T')[0];
     modal.classList.remove('hidden');
 }
@@ -252,19 +306,20 @@ function openEditModal(id) {
     modal.classList.remove('hidden');
 }
 function closeModal() { modal.classList.add('hidden'); }
+
 function handleSubmit(e) {
     e.preventDefault();
     const id = idInput.value ? Number(idInput.value) : null;
     const payload = {
         id: id || generateId(),
         customerName: document.getElementById('customer-name').value.trim(),
-        email:        document.getElementById('customer-email').value.trim(),
+        email: document.getElementById('customer-email').value.trim(),
         mobileNumber: document.getElementById('mobile-number').value.trim(),
-        couponCode:   document.getElementById('coupon-code').value.trim().toUpperCase(),
+        couponCode: document.getElementById('coupon-code').value.trim().toUpperCase(),
         discountValue: Number(document.getElementById('discount-value').value),
         discountType: document.getElementById('discount-type').value,
-        validUntil:   document.getElementById('valid-until').value,
-        status:       document.getElementById('discount-status').value
+        validUntil: document.getElementById('valid-until').value,
+        status: document.getElementById('discount-status').value
     };
     const codeExists = discounts.some(d => d.couponCode === payload.couponCode && d.id !== payload.id);
     if (codeExists) {
@@ -279,11 +334,11 @@ function handleSubmit(e) {
     }
     localStorage.setItem('discounts', JSON.stringify(discounts));
     updateStats();
-    filteredDiscounts = [...discounts];
-    renderTable();
+    applyFilters();
     closeModal();
     showNotify(`Discount ${id ? 'updated' : 'added'} successfully!`, 'success');
 }
+
 function openDeleteModal(id) {
     deleteModal.dataset.id = id;
     deleteModal.classList.remove('hidden');
@@ -297,11 +352,12 @@ function confirmDelete() {
     discounts = discounts.filter(d => d.id !== id);
     localStorage.setItem('discounts', JSON.stringify(discounts));
     updateStats();
-    filteredDiscounts = [...discounts];
-    renderTable();
+    applyFilters();
     closeDeleteModal();
     showNotify('Discount deleted!', 'success');
 }
+
+/* ---------- Utilities ---------- */
 function generateId() {
     return discounts.length ? Math.max(...discounts.map(d => d.id)) + 1 : 1;
 }
@@ -309,8 +365,7 @@ function formatDate(str) {
     return new Date(str).toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
 }
 function statusClass(st) {
-    return st === 'active' ? 'status-active' :
-           st === 'expired' ? 'status-expired' : 'status-pending';
+    return st === 'active' ? 'status-active' : st === 'expired' ? 'status-expired' : 'status-pending';
 }
 function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 function escapeHtml(str) {
@@ -322,9 +377,15 @@ function showNotify(msg, type = 'info') {
     const el = document.createElement('div');
     el.textContent = msg;
     el.className = `fixed top-4 right-4 p-4 rounded-lg text-white shadow-lg z-50 animate-fadeIn ${
-        type === 'success' ? 'bg-green-500' :
-        type === 'error'   ? 'bg-red-500' : 'bg-blue-500'
+        type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'
     }`;
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 3000);
+}
+function debounce(fn, wait) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), wait);
+    };
 }

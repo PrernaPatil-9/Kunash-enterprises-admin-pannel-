@@ -6,46 +6,13 @@ let categories = JSON.parse(localStorage.getItem('categories') || '[]');
 if (products.length === 0) {
     products = [
         {
-            id: 'PROD001', 
-            name: 'Gaming Laptop', 
-            category: 'Laptops', 
-            subcategory: 'Gaming Laptops', 
-            oldPrice: 89999, 
-            newPrice: 74999,
-            stock: 15, 
-            mainImage: 'https://via.placeholder.com/300', 
-            subImages: ['https://via.placeholder.com/60/FF0000', 'https://via.placeholder.com/60/00FF00'],
-            ram: '16GB',
-            status: 'active',
-            createdAt: new Date().toISOString()
+            id: 'PROD001', name: 'Gaming Laptop', category: 'Laptops', subcategory: 'Gaming Laptops', oldPrice: 89999, newPrice: 74999, stock: 15, mainImage: 'https://via.placeholder.com/300', subImages: ['https://via.placeholder.com/60/FF0000', 'https://via.placeholder.com/60/00FF00'], ram: '16GB', status: 'active', createdAt: new Date().toISOString()
         },
         {
-            id: 'PROD002', 
-            name: 'Wireless Keyboard', 
-            category: 'Keyboards', 
-            subcategory: 'Wireless Keyboards', 
-            oldPrice: 4999, 
-            newPrice: 3999,
-            stock: 25, 
-            mainImage: 'https://via.placeholder.com/300', 
-            subImages: ['https://via.placeholder.com/60/0000FF'],
-            ram: '',
-            status: 'active',
-            createdAt: new Date().toISOString()
+            id: 'PROD002', name: 'Wireless Keyboard', category: 'Keyboards', subcategory: 'Wireless Keyboards', oldPrice: 4999, newPrice: 3999, stock: 25, mainImage: 'https://via.placeholder.com/300', subImages: ['https://via.placeholder.com/60/0000FF'], ram: '', status: 'active', createdAt: new Date().toISOString()
         },
         {
-            id: 'PROD003', 
-            name: 'Gaming Mouse', 
-            category: 'Mouse', 
-            subcategory: 'Gaming Mouse', 
-            oldPrice: 2999, 
-            newPrice: 1999,
-            stock: 50, 
-            mainImage: 'https://via.placeholder.com/300', 
-            subImages: ['https://via.placeholder.com/60/FF00FF', 'https://via.placeholder.com/60/FFFF00'],
-            ram: '',
-            status: 'active',
-            createdAt: new Date().toISOString()
+            id: 'PROD003', name: 'Gaming Mouse', category: 'Mouse', subcategory: 'Gaming Mouse', oldPrice: 2999, newPrice: 1999, stock: 50, mainImage: 'https://via.placeholder.com/300', subImages: ['https://via.placeholder.com/60/FF00FF', 'https://via.placeholder.com/60/FFFF00'], ram: '', status: 'active', createdAt: new Date().toISOString()
         }
     ];
     localStorage.setItem('products', JSON.stringify(products));
@@ -95,12 +62,22 @@ const filterMaxPrice = document.getElementById('filter-max-price');
 const viewModal = document.getElementById('view-product-modal');
 const viewContent = document.getElementById('view-product-content');
 const closeViewModal = document.getElementById('close-view-modal');
+const resetFiltersBtn = document.getElementById('reset-filters');
+const paginationInfo = document.getElementById('pagination-info');
+const prevPageBtn = document.getElementById('prev-page');
+const nextPageBtn = document.getElementById('next-page');
+const pageNumbersContainer = document.getElementById('page-numbers');
+
+/* Pagination */
+const itemsPerPage = 10;
+let currentPage = 1;
 
 /* Init */
 document.addEventListener('DOMContentLoaded', () => {
     renderProducts();
     populateFilters();
     setupEventListeners();
+    renderPagination();
 });
 
 /* Render Table */
@@ -109,8 +86,11 @@ function renderProducts() {
     tableBody.innerHTML = '';
 
     const filtered = getFilteredProducts();
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginated = filtered.slice(start, end);
 
-    filtered.forEach(p => {
+    paginated.forEach(p => {
         const row = document.createElement('tr');
         row.className = 'border-b hover:bg-orange-50 transition';
         row.innerHTML = `
@@ -120,17 +100,8 @@ function renderProducts() {
             <td class="py-3 px-4 text-sm">${p.id}</td>
             <td class="py-3 px-4 text-sm font-medium">${p.name}</td>
             <td class="py-3 px-4"><img src="${p.mainImage}" alt="" class="img-thumb"></td>
-            <td class="py-3 px-4">
-                <div class="sub-images">
-                    ${p.subImages && p.subImages.length > 0 
-                        ? p.subImages.map(img => `<img src="${img}" alt="">`).join('') 
-                        : '<span class="text-gray-400 text-xs">No images</span>'
-                    }
-                </div>
-            </td>
             <td class="py-3 px-4 text-sm">${p.category}</td>
             <td class="py-3 px-4 text-sm">${p.subcategory || '-'}</td>
-            <td class="py-3 px-4 text-sm">${p.ram || '-'}</td>
             <td class="py-3 px-4 text-sm"><del>₹${p.oldPrice}</del></td>
             <td class="py-3 px-4 text-sm font-semibold text-green-600">₹${p.newPrice}</td>
             <td class="py-3 px-4 text-sm ${p.stock < 10 ? 'text-red-600 font-semibold' : ''}">${p.stock}</td>
@@ -156,6 +127,46 @@ function renderProducts() {
 
     attachRowEvents();
     updateBulkDeleteButton();
+    updatePaginationInfo(filtered.length);
+    renderPagination(filtered.length);
+}
+
+/* Pagination */
+function renderPagination(totalItems = products.length) {
+    const filtered = getFilteredProducts();
+    totalItems = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+
+    pageNumbersContainer.innerHTML = '';
+    prevPageBtn.disabled = currentPage === 1;
+    nextPageBtn.disabled = currentPage === totalPages;
+
+    const maxVisible = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    if (endPage - startPage + 1 < maxVisible) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        const btn = document.createElement('button');
+        btn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+        btn.textContent = i;
+        btn.onclick = () => {
+            currentPage = i;
+            renderProducts();
+        };
+        pageNumbersContainer.appendChild(btn);
+    }
+}
+
+function updatePaginationInfo(totalItems) {
+    const filtered = getFilteredProducts();
+    const start = (currentPage - 1) * itemsPerPage + 1;
+    const end = Math.min(currentPage * itemsPerPage, filtered.length);
+    paginationInfo.textContent = filtered.length > 0 
+        ? `Showing ${start} to ${end} of ${filtered.length} entries`
+        : 'No entries found';
 }
 
 /* Show Product Details in Modal */
@@ -236,10 +247,41 @@ function populateFilters() {
     });
 }
 
+/* Reset Filters */
+function resetFilters() {
+    filterName.value = '';
+    filterCategory.value = '';
+    filterSubcategory.value = '';
+    filterMinPrice.value = '';
+    filterMaxPrice.value = '';
+    currentPage = 1;
+    renderProducts();
+}
+
 /* Event Listeners */
 function setupEventListeners() {
     [filterName, filterCategory, filterSubcategory, filterMinPrice, filterMaxPrice].forEach(el => {
-        el.addEventListener('input', debounce(renderProducts, 300));
+        el.addEventListener('input', debounce(() => {
+            currentPage = 1;
+            renderProducts();
+        }, 300));
+    });
+
+    resetFiltersBtn.addEventListener('click', resetFilters);
+
+    prevPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderProducts();
+        }
+    });
+
+    nextPageBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(getFilteredProducts().length / itemsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderProducts();
+        }
     });
 
     selectAll.addEventListener('change', () => {
@@ -253,6 +295,7 @@ function setupEventListeners() {
         if (confirm(`Delete ${selected.length} products?`)) {
             products = products.filter(p => !selected.includes(p.id));
             localStorage.setItem('products', JSON.stringify(products));
+            currentPage = 1;
             renderProducts();
         }
     });
@@ -289,6 +332,7 @@ function setupEventListeners() {
                 products.push(...newProducts);
                 localStorage.setItem('products', JSON.stringify(products));
                 alert(`${newProducts.length} products uploaded!`);
+                currentPage = 1;
                 renderProducts();
             } catch (err) {
                 alert('Error uploading file: ' + err.message);
@@ -327,7 +371,6 @@ function setupEventListeners() {
         const name = document.getElementById('category-name').value.trim();
         if (!name) return alert('Name required');
         
-        // Check if category needs RAM (only laptops and their subcategories)
         const needsRam = name.toLowerCase().includes('laptop');
         
         categories.push({
@@ -366,6 +409,7 @@ function attachRowEvents() {
             if (confirm('Delete product?')) {
                 products = products.filter(p => p.id !== btn.dataset.id);
                 localStorage.setItem('products', JSON.stringify(products));
+                currentPage = 1;
                 renderProducts();
             }
         };
@@ -404,10 +448,11 @@ function downloadFile(content, filename, type) {
     a.click(); URL.revokeObjectURL(url);
 }
 
-// Listen for storage changes to update products in real-time
+// Listen for storage changes
 window.addEventListener('storage', (e) => {
     if (e.key === 'products') {
         products = JSON.parse(e.newValue || '[]');
+        currentPage = 1;
         renderProducts();
         populateFilters();
     }

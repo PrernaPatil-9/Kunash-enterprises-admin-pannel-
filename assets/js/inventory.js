@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let products = JSON.parse(localStorage.getItem('products') || '[]');
     let categories = JSON.parse(localStorage.getItem('categories') || '[]');
     let currentEditingProduct = null;
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let selectedProducts = new Set();
 
     // Initialize categories if empty (same as add product page)
     if (categories.length === 0) {
@@ -51,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
         populateAddStockCategories();
         renderTable();
         setupEventListeners();
+        updatePagination();
     }
 
     // ===============================================
@@ -167,6 +171,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===============================================
+    // Get Filtered Products
+    // ===============================================
+    function getFilteredProducts() {
+        const searchTerm = document.getElementById('search-inventory').value.toLowerCase();
+        const categoryFilter = document.getElementById('filter-category').value;
+        const statusFilter = document.getElementById('filter-status').value;
+
+        return products.filter(function(product) {
+            const productName = (product.name || '').toLowerCase();
+            const category = product.category || '';
+            const stock = parseInt(product.stock) || 0;
+            
+            let statusMatch = true;
+            if (statusFilter === 'in-stock') {
+                statusMatch = stock > LOW_THRESHOLD;
+            } else if (statusFilter === 'low-stock') {
+                statusMatch = stock > 0 && stock <= LOW_THRESHOLD;
+            } else if (statusFilter === 'out-of-stock') {
+                statusMatch = stock === 0;
+            }
+
+            const categoryMatch = !categoryFilter || category === categoryFilter;
+            const searchMatch = !searchTerm || productName.includes(searchTerm);
+            
+            return searchMatch && categoryMatch && statusMatch;
+        });
+    }
+
+    // ===============================================
     // Render Table
     // ===============================================
     function renderTable() {
@@ -175,7 +208,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         tbody.innerHTML = '';
 
-        if (products.length === 0) {
+        const filteredProducts = getFilteredProducts();
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, filteredProducts.length);
+        const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+        if (paginatedProducts.length === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="8" class="px-6 py-8 text-center text-gray-500">
@@ -190,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        products.forEach(function(p) {
+        paginatedProducts.forEach(function(p) {
             const stock = parseInt(p.stock) || 0;
             const rowClass = stock === 0 ? 'stock-out' : (stock <= LOW_THRESHOLD ? 'stock-low' : '');
             const status = stock === 0 ? 'Out of Stock' :
@@ -199,9 +237,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 stock <= LOW_THRESHOLD ? 'bg-yellow-100 text-yellow-800' :
                                 'bg-green-100 text-green-800';
 
+            const isSelected = selectedProducts.has(p.id);
+
             const tr = document.createElement('tr');
-            tr.className = rowClass;
+            tr.className = rowClass + (isSelected ? ' bg-orange-50' : '');
             tr.innerHTML = `
+                <td class="px-4 py-4 whitespace-nowrap">
+                    <input type="checkbox" class="product-checkbox rounded border-gray-300 text-orange-600 focus:ring-orange-500" data-id="${p.id}" ${isSelected ? 'checked' : ''}>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 h-10 w-10 bg-orange-100 rounded-md flex items-center justify-center mr-3">
@@ -218,7 +261,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${p.category || '-'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${p.subcategory || '-'}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${p.ram || '-'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">${stock}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div class="flex flex-col">
@@ -248,35 +290,96 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             tbody.appendChild(tr);
         });
+
+        updateBulkActions();
     }
 
     // ===============================================
-    // Filter Products
+    // Update Pagination
     // ===============================================
-    function filterProducts() {
-        const searchTerm = document.getElementById('search-inventory').value.toLowerCase();
-        const categoryFilter = document.getElementById('filter-category').value;
-        const statusFilter = document.getElementById('filter-status').value;
+    function updatePagination() {
+        const filteredProducts = getFilteredProducts();
+        const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+        
+        // Update pagination info
+        const startIndex = (currentPage - 1) * itemsPerPage + 1;
+        const endIndex = Math.min(currentPage * itemsPerPage, filteredProducts.length);
+        
+        document.getElementById('pagination-start').textContent = startIndex;
+        document.getElementById('pagination-end').textContent = endIndex;
+        document.getElementById('pagination-total').textContent = filteredProducts.length;
+        
+        // Update page numbers
+        const pageNumbersContainer = document.getElementById('page-numbers');
+        pageNumbersContainer.innerHTML = '';
+        
+        // Show up to 5 page numbers
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        
+        // Adjust if we're near the end
+        if (endPage - startPage < 4 && startPage > 1) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.className = `px-3 py-1 rounded border ${i === currentPage ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`;
+            pageButton.textContent = i;
+            pageButton.addEventListener('click', () => {
+                currentPage = i;
+                renderTable();
+                updatePagination();
+            });
+            pageNumbersContainer.appendChild(pageButton);
+        }
+        
+        // Update prev/next buttons
+        document.getElementById('prev-page').disabled = currentPage === 1;
+        document.getElementById('next-page').disabled = currentPage === totalPages || totalPages === 0;
+    }
 
-        document.querySelectorAll('#inventory-body tr').forEach(function(tr) {
-            const productName = tr.querySelector('td:first-child .text-sm.font-medium')?.textContent.toLowerCase() || '';
-            const category = tr.querySelector('td:nth-child(2)')?.textContent || '';
-            const stock = parseInt(tr.querySelector('td:nth-child(5)')?.textContent) || 0;
-            
-            let statusMatch = true;
-            if (statusFilter === 'in-stock') {
-                statusMatch = stock > LOW_THRESHOLD;
-            } else if (statusFilter === 'low-stock') {
-                statusMatch = stock > 0 && stock <= LOW_THRESHOLD;
-            } else if (statusFilter === 'out-of-stock') {
-                statusMatch = stock === 0;
-            }
+    // ===============================================
+    // Update Bulk Actions
+    // ===============================================
+    function updateBulkActions() {
+        const bulkActions = document.getElementById('bulk-actions');
+        const selectedCount = document.getElementById('selected-count');
+        
+        if (selectedProducts.size > 0) {
+            bulkActions.classList.remove('hidden');
+            selectedCount.textContent = `${selectedProducts.size} item${selectedProducts.size > 1 ? 's' : ''} selected`;
+        } else {
+            bulkActions.classList.add('hidden');
+        }
+    }
 
-            const categoryMatch = !categoryFilter || category === categoryFilter;
-            const searchMatch = !searchTerm || productName.includes(searchTerm);
+    // ===============================================
+    // Reset Selection
+    // ===============================================
+    function resetSelection() {
+        selectedProducts.clear();
+        renderTable();
+    }
+
+    // ===============================================
+    // Delete Selected Products
+    // ===============================================
+    function deleteSelectedProducts() {
+        if (selectedProducts.size === 0) return;
+        
+        const confirmDelete = confirm(`Are you sure you want to delete ${selectedProducts.size} product${selectedProducts.size > 1 ? 's' : ''}? This action cannot be undone.`);
+        
+        if (confirmDelete) {
+            products = products.filter(function(product) {
+                return !selectedProducts.has(product.id);
+            });
             
-            tr.style.display = (searchMatch && categoryMatch && statusMatch) ? '' : 'none';
-        });
+            localStorage.setItem('products', JSON.stringify(products));
+            selectedProducts.clear();
+            saveAndRefresh();
+            alert(`${selectedProducts.size} product${selectedProducts.size > 1 ? 's' : ''} deleted successfully.`);
+        }
     }
 
     // ===============================================
@@ -594,9 +697,21 @@ ${product.updatedAt ? 'Last Updated: ' + new Date(product.updatedAt).toLocaleDat
         var categoryFilter = document.getElementById('filter-category');
         var statusFilter = document.getElementById('filter-status');
         
-        if (searchInput) searchInput.addEventListener('input', filterProducts);
-        if (categoryFilter) categoryFilter.addEventListener('change', filterProducts);
-        if (statusFilter) statusFilter.addEventListener('change', filterProducts);
+        if (searchInput) searchInput.addEventListener('input', function() {
+            currentPage = 1;
+            renderTable();
+            updatePagination();
+        });
+        if (categoryFilter) categoryFilter.addEventListener('change', function() {
+            currentPage = 1;
+            renderTable();
+            updatePagination();
+        });
+        if (statusFilter) statusFilter.addEventListener('change', function() {
+            currentPage = 1;
+            renderTable();
+            updatePagination();
+        });
 
         // Add stock button
         var addStockBtn = document.getElementById('add-stock-btn');
@@ -645,6 +760,67 @@ ${product.updatedAt ? 'Last Updated: ' + new Date(product.updatedAt).toLocaleDat
         // Setup image previews
         setupImagePreviews();
 
+        // Pagination events
+        document.getElementById('prev-page').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+                updatePagination();
+            }
+        });
+
+        document.getElementById('next-page').addEventListener('click', function() {
+            const filteredProducts = getFilteredProducts();
+            const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+            
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+                updatePagination();
+            }
+        });
+
+        // Bulk action events
+        document.getElementById('reset-selection').addEventListener('click', resetSelection);
+        document.getElementById('delete-selected').addEventListener('click', deleteSelectedProducts);
+
+        // Select all checkbox
+        document.getElementById('select-all').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.product-checkbox');
+            const filteredProducts = getFilteredProducts();
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredProducts.length);
+            const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+            
+            if (this.checked) {
+                paginatedProducts.forEach(function(product) {
+                    selectedProducts.add(product.id);
+                });
+            } else {
+                paginatedProducts.forEach(function(product) {
+                    selectedProducts.delete(product.id);
+                });
+            }
+            
+            renderTable();
+        });
+
+        // Individual checkbox events (delegated)
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('product-checkbox')) {
+                const productId = e.target.dataset.id;
+                
+                if (e.target.checked) {
+                    selectedProducts.add(productId);
+                } else {
+                    selectedProducts.delete(productId);
+                    document.getElementById('select-all').checked = false;
+                }
+                
+                updateBulkActions();
+            }
+        });
+
         // Table action buttons
         document.addEventListener('click', function(e) {
             var btn = e.target.closest('button');
@@ -673,6 +849,7 @@ ${product.updatedAt ? 'Last Updated: ' + new Date(product.updatedAt).toLocaleDat
                     updateStats();
                     populateCategoryFilter();
                     renderTable();
+                    updatePagination();
                 } catch (error) {
                     console.error('Error updating products:', error);
                 }
@@ -701,6 +878,7 @@ ${product.updatedAt ? 'Last Updated: ' + new Date(product.updatedAt).toLocaleDat
             updateStats();
             populateCategoryFilter();
             renderTable();
+            updatePagination();
         } catch (error) {
             console.error('Error saving products:', error);
             alert('Error saving data. Please try again.');
