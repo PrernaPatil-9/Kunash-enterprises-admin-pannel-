@@ -102,7 +102,7 @@ function renderProducts() {
             <td class="py-3 px-4"><img src="${p.mainImage}" alt="" class="img-thumb"></td>
             <td class="py-3 px-4 text-sm">${p.category}</td>
             <td class="py-3 px-4 text-sm">${p.subcategory || '-'}</td>
-            <td class="py-3 px-4 text-sm"><del>₹${p.oldPrice}</del></td>
+            <td class="py-3 px-4 text-sm">₹${p.oldPrice}</td>
             <td class="py-3 px-4 text-sm font-semibold text-green-600">₹${p.newPrice}</td>
             <td class="py-3 px-4 text-sm ${p.stock < 10 ? 'text-red-600 font-semibold' : ''}">${p.stock}</td>
             <td class="py-3 px-4 text-sm">
@@ -192,8 +192,8 @@ function showProductDetails(id) {
                 <div><strong>Name:</strong> ${product.name}</div>
                 <div><strong>Category:</strong> ${product.category} ${product.subcategory ? `> ${product.subcategory}` : ''}</div>
                 <div><strong>RAM:</strong> ${product.ram || 'N/A'}</div>
-                <div><strong>Old Price:</strong> <del>₹${product.oldPrice}</del></div>
-                <div><strong>New Price:</strong> <span class="text-green-600 font-bold">₹${product.newPrice}</span></div>
+                <div><strong>Price:</strong> ₹${product.oldPrice}</div>
+                <div><strong>Offer Price:</strong> <span class="text-green-600 font-bold">₹${product.newPrice}</span></div>
                 <div><strong>Discount:</strong> <span class="text-red-600 font-semibold">${discount}% OFF</span></div>
                 <div><strong>Stock:</strong> ${product.stock} units</div>
                 <div><strong>Status:</strong> <span class="px-2 py-1 rounded-full text-xs ${product.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${product.status}</span></div>

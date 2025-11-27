@@ -352,13 +352,22 @@ function addActionEventListeners() {
 function updateStats() {
     const totalCustomers = customers.length;
     const activeEmails = customers.filter(c => c.status === 'active').length;
-    const withPhone = customers.filter(c => c.phone).length;
-    const withAddress = customers.filter(c => c.address).length;
+    
+    // Calculate new customers (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const newCustomers = customers.filter(c => {
+        const joinedDate = new Date(c.joinedDate);
+        return joinedDate >= thirtyDaysAgo;
+    }).length;
+    
+    // Calculate deactivated customers
+    const deactivatedCustomers = customers.filter(c => c.status === 'inactive').length;
     
     document.getElementById('total-customers-count').textContent = totalCustomers;
     document.getElementById('active-emails-count').textContent = activeEmails;
-    document.getElementById('with-phone-count').textContent = withPhone;
-    document.getElementById('with-address-count').textContent = withAddress;
+    document.getElementById('new-customers-count').textContent = newCustomers;
+    document.getElementById('deactivated-customers-count').textContent = deactivatedCustomers;
 }
 
 // Edit customer

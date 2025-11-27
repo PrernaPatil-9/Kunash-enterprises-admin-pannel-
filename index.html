@@ -338,5 +338,23 @@
                 window.location.href = '../login.html';
             }
         });
+
+         // Wait for charts to be loaded from dashboard.js
+        setTimeout(() => {
+            const salesChart = Chart.getChart('salesChart');
+            if (salesChart) {
+                // Update y-axis to show Indian Rupee
+                salesChart.options.scales.y.ticks.callback = function(value) {
+                    return '₹' + value.toLocaleString('en-IN');
+                };
+                
+                // Update tooltip to show Indian Rupee
+                salesChart.options.plugins.tooltip.callbacks.label = function(context) {
+                    return 'Sales: ₹' + context.parsed.y.toLocaleString('en-IN');
+                };
+                
+                salesChart.update();
+            }
+        }, 100)
     </script>
 </body>

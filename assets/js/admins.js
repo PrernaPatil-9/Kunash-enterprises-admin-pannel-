@@ -599,3 +599,4 @@ class AdminManager {
 document.addEventListener('DOMContentLoaded', () => {
     new AdminManager();
 });
+
